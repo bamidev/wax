@@ -1,0 +1,232 @@
+{
+  description = "A flake to manage odoo with git-aggregator and pip";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+  };
+
+  outputs = { self, nixpkgs }: {
+      lib.mkOdooShell = { system, config }:
+        let
+          lib = nixpkgs.lib;
+ 
+          defaultOdooConfig = {
+            options = {
+              addons_path = "./wax/addons";
+              db_name = config.databaseName or "";
+              dbfilter = "^" + (config.databaseName or "") + "$";
+              logfile = "./wax/log/odoo.log";
+            };
+          };
+          odooConfig = lib.attrsets.recursiveUpdate defaultOdooConfig config.odooConfig;
+          odooMajorVersion = lib.strings.toInt (lib.versions.major config.odooVersion);
+
+          pkgs = nixpkgs.legacyPackages.${system};
+
+          pythonVersion = 
+            if odooMajorVersion < 12 then
+              "2.7.18"
+            else if odooMajorVersion < 14 then
+              "3.6.15"
+            else
+              "3.10.15";
+          pythonMajorVersion = lib.versions.major pythonVersion;
+
+          pythonPackage = pkgs.stdenv.mkDerivation (finalAttrs: rec {
+            name = "python";
+            version = pythonVersion;
+            src = pkgs.fetchurl {
+			  url = "https://www.python.org/ftp/python/${finalAttrs.version}/Python-${finalAttrs.version}.tar.xz";
+			  hash = if finalAttrs.version == "2.7.18" then
+				  "sha256-tiwOeTdVHQzAK4/Vyw9UT5QFuvyaVNOAjtRZSBLt70M="
+				else if finalAttrs.version == "3.6.15" then
+				  "sha256-bijXzdbdUT3RkOSbyjly4g/PRVCQzPLvPxoidhQTXZE="
+				else if finalAttrs.version == "3.10.15" then
+				  "sha256-qrCVCBdzUXJgGHmHLZN8HkkopXxAmuAjaew9kdzOvnk="
+				else
+				  "unsupported python version";
+			};
+			buildInputs = with pkgs; [
+			  bzip2
+			  cyrus_sasl
+			  libffi
+			  ncurses
+			  openldap
+			  openssl
+			  readline
+			  zlib
+			];
+			configureFlags = with pkgs; [ "--with-openssl=${openssl.dev}" "--with-pkg-config=yes" ];
+			preConfigure = with pkgs; ''
+export CPPFLAGS="-I${zlib.dev}/include -I${libffi.dev}/include -I${readline.dev}/include -I${bzip2.dev}/include -I${openssl.dev}/include";
+export CXXFLAGS="$CPPFLAGS";
+export CFLAGS="-I${openssl.dev}/include";
+export LDFLAGS="-L${zlib.out}/lib -L${libffi.out}/lib -L${readline.out}/lib -L${bzip2.out}/lib -L${openssl.out}/lib";
+'';
+			preBuild = preConfigure;
+		  });
+
+		  defaultRequirements = import ./default-requirements.nix { odooVersion = odooMajorVersion; };
+
+		  envVariables = ''
+ODOO_VERSION=${config.odooVersion}
+DEFAULT_MERGE_DEPTH=100
+'';
+
+		  commands = {
+
+			setup = with pkgs; writeShellScriptBin "setup" ''
+#!/usr/bin/bash
+set -e
+mkdir -p {etc,wax/{addons,log,repos}}
+touch etc/requirements.txt
+touch etc/repos.yaml
+
+# Create a .gitignore if it doesn't exist yet, for convenience
+if [ ! -f .gitignore ]; then
+  echo "wax" > .gitignore
+fi
+
+# Create some necessary files
+cat > wax/env-variables <<HEREDOC
+${envVariables}
+HEREDOC
+cat > wax/default-requirements.txt <<HEREDOC
+${defaultRequirements}
+HEREDOC
+
+
+# Create the virtual environment
+PYTHON="python${lib.versions.majorMinor pythonVersion}"
+PYTHON_FULL="${pythonPackage}/bin/$PYTHON"
+VENV_PYTHON="wax/venv/bin/$PYTHON"
+
+# Provide some compiler flags to help the required python packages to be compiled.
+# Perhaps older versions of python or pip doesn't use pkg-config.
+export CFLAGS="$CFLAGS -I${cyrus_sasl.dev}/include/sasl $(pkg-config --cflags libxml-2.0) $(pkg-config --cflags libxslt)"
+export LDFLAGS="$LDFLAGS -L./wax/venv/lib -L${cyrus_sasl}/lib $(pkg-config --libs-only-L libxml-2.0) $(pkg-config --libs-only-L libxslt) $(pkg-config --libs-only-L ldap) $(pkg-config --libs-only-L lber)"
+
+if [ ! -e wax/venv ]; then
+  mkdir -p wax/tmp
+  wget https://bootstrap-pypa-io.ingress.us-east-2.psfhosted.computer/virtualenv/${lib.versions.majorMinor pythonVersion}/virtualenv.pyz -O wax/tmp/virtualenv.pyz
+  $PYTHON_FULL wax/tmp/virtualenv.pyz wax/venv
+
+  # Fake the libldap_r binary to be available
+  # Older versions of python-ldap require it instead of the standard version, but nix doesn't have that binary
+  ln -f -s ${openldap}/lib/libldap.so wax/venv/lib/libldap_r.so
+
+  if [ ${lib.versions.major pythonVersion} == 2 ]; then
+    $VENV_PYTHON -m pip install pip==20.3.4
+  else
+    $VENV_PYTHON -m pip install pip==25.1.1
+  fi
+
+  if [ -f requirements.lock ]; then
+    $VENV_PYTHON -m pip install -r requirements.lock
+  fi
+fi
+
+# Install the python packages into the virtual environment if no lock file is present yet 
+if [ ! -f requirements.lock ]; then
+  $VENV_PYTHON -m pip install -r wax/default-requirements.txt
+  $VENV_PYTHON -m pip install -r etc/requirements.txt
+  $VENV_PYTHON -m pip freeze > requirements.lock
+  cp etc/requirements.txt wax/used-requirements.txt
+else
+  if [ ! -f wax/used-requirements.txt ]; then
+    cp etc/requirements.txt wax/used-requirements.txt
+  else
+    cmp etc/requirements.txt wax/used-requirements.txt || echo The etc/requirements.txt file has been changed. Remove the lock file and run setup again to install the latest changes.
+  fi
+fi
+'';
+
+			build = with pkgs; writeShellScriptBin "build" ''
+set -e
+
+# Clean up tmp dir if it still exists
+rm -r wax/tmp/*
+
+# Update repos with git-aggregator
+(
+  cd wax/repos
+  gitaggregate -c ../../etc/repos.yaml --expand-env --env-file ../env-variables
+)
+
+# Check if the odoo repository has been configured
+if [ ! -d wax/repos/odoo ]; then
+  echo The odoo repository has not been configured in the etc/repos.yaml file. Please do that before running build.
+  exit 1
+fi
+
+# Add all modules' links in one directory
+rm -r wax/addons || true
+mkdir wax/addons
+for REPO in $(ls -r wax/repos); do
+  if [ "$REPO" != "odoo" ]; then
+    ls "wax/repos/$REPO" | xargs -I{} ln -f -s "$(pwd)/wax/repos/odoo/addons/{}" "wax/addons/{}"
+  fi
+done
+ls wax/repos/odoo/addons | xargs -I{} ln -f -s "$(pwd)/wax/repos/odoo/addons/{}" "wax/addons/{}"
+
+build-config
+'';
+
+			build-config = with pkgs; writeShellScriptBin "build-config" ''
+set -e
+cat > wax/odoo.cfg <<HEREDOC
+${lib.generators.toINI {} odooConfig}
+HEREDOC
+'';
+
+			run = pkgs.writeShellScriptBin "run" ''
+#!/usr/bin/bash
+if [ ${toString odooMajorVersion} -lt 12 ]; then
+  echo TEST
+  wax/venv/bin/python wax/repos/odoo/odoo.py -c wax/odoo.cfg ''$@
+else
+  wax/venv/bin/python wax/repos/odoo/odoo-bin -c wax/odoo.cfg ''$@
+fi
+'';
+
+			shell = pkgs.writeShellScriptBin "shell" ''
+#!/usr/bin/bash
+if [ ${toString odooMajorVersion} -lt 12 ]; then
+  wax/venv/bin/python wax/repos/odoo/odoo.py shell -c wax/odoo.cfg ''$@
+else
+  wax/venv/bin/python wax/repos/odoo/odoo-bin shell -c wax/odoo.cfg ''$@
+fi
+'';
+          };
+        in pkgs.mkShell {
+          packages = with pkgs; [
+            commands.build
+            commands.build-config
+            commands.run
+            commands.setup
+            commands.shell
+            cyrus_sasl
+            stdenv.cc.cc.lib
+            git-aggregator
+            libxml2
+            libxslt
+            openldap
+            pkg-config
+            postgresql_17.dev
+            pythonPackage
+            wget
+            wkhtmltopdf
+          ] ++ (lib.optionals (pythonMajorVersion == 2) [
+            #xCryptPackage
+          ]);
+
+          shellHook = with pkgs; ''
+alias python=${pythonPackage}/bin/python${lib.versions.majorMinor pythonVersion}
+export PYTHONPATH="${pythonPackage}/lib/site-packages"
+export LD_LIBRARY_PATH="${stdenv.cc.cc.lib}/lib"
+setup
+'';
+        };
+
+    };
+}
