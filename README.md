@@ -30,7 +30,7 @@ Here is an example Nix flake for you Odoo project:
 `config.nix`:
 ```
 {
-  odooVersion = 16;
+  odooVersion = "16.0";
   databaseName = "my-database";
 
   odooConfig = {
