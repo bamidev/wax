@@ -104,7 +104,7 @@ VENV_PYTHON="wax/venv/bin/$PYTHON"
 # Provide some compiler flags to help the required python packages to be compiled.
 # Perhaps older versions of python or pip doesn't use pkg-config.
 export CFLAGS="$CFLAGS -I${cyrus_sasl.dev}/include/sasl $(pkg-config --cflags libxml-2.0) $(pkg-config --cflags libxslt)"
-export LDFLAGS="$LDFLAGS -L./wax/venv/lib -L${cyrus_sasl}/lib $(pkg-config --libs-only-L libxml-2.0) $(pkg-config --libs-only-L libxslt) $(pkg-config --libs-only-L ldap) $(pkg-config --libs-only-L lber)"
+export LDFLAGS="$LDFLAGS -L$(pwd)/wax/venv/lib -L${cyrus_sasl}/lib $(pkg-config --libs-only-L libxml-2.0) $(pkg-config --libs-only-L libxslt) $(pkg-config --libs-only-L ldap) $(pkg-config --libs-only-L lber)"
 
 if [ ! -e wax/venv ]; then
   mkdir -p wax/tmp
@@ -182,7 +182,6 @@ HEREDOC
 			run = pkgs.writeShellScriptBin "run" ''
 #!/usr/bin/bash
 if [ ${toString odooMajorVersion} -lt 12 ]; then
-  echo TEST
   wax/venv/bin/python wax/repos/odoo/odoo.py -c wax/odoo.cfg ''$@
 else
   wax/venv/bin/python wax/repos/odoo/odoo-bin -c wax/odoo.cfg ''$@
@@ -217,7 +216,8 @@ fi
             wget
             wkhtmltopdf
           ] ++ (lib.optionals (pythonMajorVersion == 2) [
-            #xCryptPackage
+            # Needed because psycopg2==2.8.6 uses it
+            libxcrypt-legacy
           ]);
 
           shellHook = with pkgs; ''
