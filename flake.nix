@@ -24,13 +24,18 @@
           pkgs = nixpkgs.legacyPackages.${system};
 
           pythonVersion = 
-            if odooMajorVersion < 12 then
+            if odooMajorVersion < 11 then
               "2.7.18"
-            else if odooMajorVersion < 14 then
+            else if odooMajorVersion < 13 then
+              "3.5.10"
+            else if odooMajorVersion < 15 then
               "3.6.15"
+            else if odooMajorVersion < 17 then
+              "3.8.20"
             else
               "3.10.15";
-          pythonMajorVersion = lib.versions.major pythonVersion;
+          pythonMajorVersion = lib.strings.toInt (lib.versions.major pythonVersion);
+          pythonMinorVersion = lib.strings.toInt (lib.versions.minor pythonVersion);
 
           pythonPackage = pkgs.stdenv.mkDerivation (finalAttrs: rec {
             name = "python";
@@ -39,8 +44,12 @@
 			  url = "https://www.python.org/ftp/python/${finalAttrs.version}/Python-${finalAttrs.version}.tar.xz";
 			  hash = if finalAttrs.version == "2.7.18" then
 				  "sha256-tiwOeTdVHQzAK4/Vyw9UT5QFuvyaVNOAjtRZSBLt70M="
+				else if finalAttrs.version == "3.5.10" then
+				  "sha256-Dw+oaFwdwfHaywtOd3l5a5Cu+Z3B+klnpxudp7V9Sig="
 				else if finalAttrs.version == "3.6.15" then
 				  "sha256-bijXzdbdUT3RkOSbyjly4g/PRVCQzPLvPxoidhQTXZE="
+				else if finalAttrs.version == "3.8.20" then
+				  "sha256-b7iacSQgHGESXAq0z39olN8zmkDAKDO/0oq012kfr7Q="
 				else if finalAttrs.version == "3.10.15" then
 				  "sha256-qrCVCBdzUXJgGHmHLZN8HkkopXxAmuAjaew9kdzOvnk="
 				else
@@ -64,9 +73,39 @@ export CFLAGS="-I${openssl.dev}/include";
 export LDFLAGS="-L${zlib.out}/lib -L${libffi.out}/lib -L${readline.out}/lib -L${bzip2.out}/lib -L${openssl.out}/lib";
 '';
 			preBuild = preConfigure;
+
+            # See https://bugs.python.org/issue45700
+            # Credits to nixpkgs-python: https://github.com/cachix/nixpkgs-python/blob/main/flake.nix
+            patches = lib.optionals (
+                pythonMajorVersion == 3 && (builtins.elem pythonMinorVersion [5 6])
+              ) [
+              (pkgs.fetchpatch {
+                url = "https://github.com/python/cpython/commit/8766cb74e186d3820db0a855.patch";
+                sha256 = "IzAp3M6hpSNcbVRttzvXNDyAVK7vLesKZDEDkdYbuww=";
+              })
+              (pkgs.fetchpatch {
+                url = "https://github.com/python/cpython/commit/f0be4bbb9b3cee876249c23f.patch";
+                sha256 = "FUF7ZkkatS4ON4++pR9XJQFQLW1kKSVzSs8NAS19bDY=";
+              })
+            ];
 		  });
 
-		  defaultRequirements = import ./default-requirements.nix { odooVersion = odooMajorVersion; };
+          pipVersion =
+            if pythonMajorVersion == 2 || pythonMinorVersion < 6 then
+              "20.3.4"
+            else
+              if pythonMinorVersion == 6 then
+                "21.3.1"
+              else if pythonMinorVersion == 8 then
+                "25.0.1"
+              else
+                "25.1.1";
+
+		  defaultRequirements = import ./default-requirements.nix {
+            lib = lib;
+            odooMajorVersion = odooMajorVersion;
+            pythonVersion = pythonVersion;
+          };
 
 		  envVariables = ''
 ODOO_VERSION=${config.odooVersion}
@@ -103,8 +142,20 @@ VENV_PYTHON="wax/venv/bin/$PYTHON"
 
 # Provide some compiler flags to help the required python packages to be compiled.
 # Perhaps older versions of python or pip doesn't use pkg-config.
-export CFLAGS="$CFLAGS -I${cyrus_sasl.dev}/include/sasl $(pkg-config --cflags libxml-2.0) $(pkg-config --cflags libxslt)"
-export LDFLAGS="$LDFLAGS -L$(pwd)/wax/venv/lib -L${cyrus_sasl}/lib $(pkg-config --libs-only-L libxml-2.0) $(pkg-config --libs-only-L libxslt) $(pkg-config --libs-only-L ldap) $(pkg-config --libs-only-L lber)"
+export CFLAGS="$CFLAGS "\
+"-I${cyrus_sasl.dev}/include/sasl "\
+"$(pkg-config --cflags libjpeg) "\
+"$(pkg-config --cflags libxml-2.0) "\
+"$(pkg-config --cflags libxslt) "\
+"$(pkg-config --cflags zlib)"
+export LDFLAGS="$LDFLAGS "\
+"-L$(pwd)/wax/venv/lib -L${cyrus_sasl}/lib "\
+"$(pkg-config --libs-only-L libjpeg) "\
+"$(pkg-config --libs-only-L lber) "\
+"$(pkg-config --libs-only-L ldap) "\
+"$(pkg-config --libs-only-L libxml-2.0) "\
+"$(pkg-config --libs-only-L libxslt) "\
+"$(pkg-config --libs-only-L zlib)"
 
 if [ ! -e wax/venv ]; then
   mkdir -p wax/tmp
@@ -115,11 +166,7 @@ if [ ! -e wax/venv ]; then
   # Older versions of python-ldap require it instead of the standard version, but nix doesn't have that binary
   ln -f -s ${openldap}/lib/libldap.so wax/venv/lib/libldap_r.so
 
-  if [ ${lib.versions.major pythonVersion} == 2 ]; then
-    $VENV_PYTHON -m pip install pip==20.3.4
-  else
-    $VENV_PYTHON -m pip install pip==25.1.1
-  fi
+  $VENV_PYTHON -m pip install pip==${pipVersion}
 
   if [ -f requirements.lock ]; then
     $VENV_PYTHON -m pip install -r requirements.lock
@@ -145,7 +192,7 @@ fi
 set -e
 
 # Clean up tmp dir if it still exists
-rm -r wax/tmp/*
+rm -rf wax/tmp/*
 
 # Update repos with git-aggregator
 (
@@ -181,7 +228,7 @@ HEREDOC
 
 			run = pkgs.writeShellScriptBin "run" ''
 #!/usr/bin/bash
-if [ ${toString odooMajorVersion} -lt 12 ]; then
+if [ ${toString odooMajorVersion} -lt 10 ]; then
   wax/venv/bin/python wax/repos/odoo/odoo.py -c wax/odoo.cfg ''$@
 else
   wax/venv/bin/python wax/repos/odoo/odoo-bin -c wax/odoo.cfg ''$@
@@ -190,7 +237,7 @@ fi
 
 			shell = pkgs.writeShellScriptBin "shell" ''
 #!/usr/bin/bash
-if [ ${toString odooMajorVersion} -lt 12 ]; then
+if [ ${toString odooMajorVersion} -lt 10 ]; then
   wax/venv/bin/python wax/repos/odoo/odoo.py shell -c wax/odoo.cfg ''$@
 else
   wax/venv/bin/python wax/repos/odoo/odoo-bin shell -c wax/odoo.cfg ''$@
@@ -207,6 +254,7 @@ fi
             cyrus_sasl
             stdenv.cc.cc.lib
             git-aggregator
+            libffi
             libxml2
             libxslt
             openldap
@@ -215,15 +263,23 @@ fi
             pythonPackage
             wget
             wkhtmltopdf
-          ] ++ (lib.optionals (pythonMajorVersion == 2) [
-            # Needed because psycopg2==2.8.6 uses it
-            libxcrypt-legacy
+          # Dependencies of python packages:
+          ] ++ (lib.optionals (odooMajorVersion < 11) [
+            libxcrypt-legacy # psycopg2 2.8 uses it
+            zlib # Pillow 3.3
+            libjpeg # Pillow 3.3
           ]);
 
           shellHook = with pkgs; ''
-alias python=${pythonPackage}/bin/python${lib.versions.majorMinor pythonVersion}
+set -e
+alias python="${pythonPackage}/bin/python${lib.versions.majorMinor pythonVersion}"
 export PYTHONPATH="${pythonPackage}/lib/site-packages"
-export LD_LIBRARY_PATH="${stdenv.cc.cc.lib}/lib"
+# Python 3.6 may fail if this environment variable is set to something
+unset _PYTHON_SYSCONFIGDATA_NAME
+export LD_LIBRARY_PATH=\
+"${stdenv.cc.cc.lib}/lib:"\
+"${libxcrypt-legacy}/lib"
+
 setup
 '';
         };

@@ -1,28 +1,10 @@
-{ odooVersion }:
-  # First, somewhat newer versions than expected, because the old wheels don't compile within Nix
-  (if odooVersion < 12 then ''
-gevent==1.0.2
-greenlet==0.4.7
-Pillow==6.2.2
-python-ldap==2.4.15
-psycopg2==2.8.6
-'' else if odooVersion < 14 then ''
-gevent==25.5.1
-greenlet==3.2.3
-Pillow==9.0.1
-python-ldap==3.4.4
-psycopg2==2.9.2
-'' else ''
-gevent==25.5.1
-greenlet==3.2.3
-Pillow==9.0.1
-python-ldap==3.4.4
-psycopg2==2.9.2
-'') + (if odooVersion == 8 then ''
+{ lib, odooMajorVersion, pythonVersion }:
+  (if odooMajorVersion == 8 then ''
 Babel==1.3
 Jinja2==2.8.1
 Mako==1.0.0
 MarkupSafe==0.23
+Pillow==3.3.2
 Python-Chart==1.39
 PyYAML==3.11
 Werkzeug==0.9.6
@@ -31,17 +13,21 @@ decorator==3.4.0
 docutils==0.12
 feedparser==5.1.3
 gdata==2.0.18
+gevent==1.0.2
+greenlet==0.4.7
 jcconv==0.2.3
 lxml==3.3.5
 mock==1.0.1
 passlib==1.6.2
 psutil==2.1.1
 psycogreen==1.0
+psycopg2==2.7.7
 pyPdf==1.13
 pydot==1.0.2
 pyparsing==1.5.7
 pyserial==2.7
 python-dateutil==1.5
+python-ldap==2.4.15
 python-openid==2.2.5
 pytz==2014.4
 pyusb==1.0.0b1
@@ -55,11 +41,12 @@ vatnumber==1.2
 vobject==0.6.6
 wsgiref==0.1.2
 xlwt==0.7.5
-'' else if odooVersion == 9 then ''
+'' else if odooMajorVersion == 9 then ''
 Babel==1.3
 Jinja2==2.8.1
 Mako==1.0.1
 MarkupSafe==0.23
+Pillow==3.3.2
 Python-Chart==1.39
 PyYAML==3.11
 Werkzeug==0.9.6
@@ -68,6 +55,8 @@ decorator==3.4.0
 docutils==0.12
 feedparser==5.1.3
 gdata==2.0.18
+gevent==1.0.2
+greenlet==0.4.7
 jcconv==0.2.3
 lxml==3.4.1
 mock==1.0.1
@@ -75,6 +64,7 @@ ofxparse==0.14
 passlib==1.6.2
 psutil==2.2.0
 psycogreen==1.0
+psycopg2==2.7.7
 pyPdf==1.13
 pydot==1.0.2
 pyparsing==2.0.3
@@ -93,27 +83,33 @@ vatnumber==1.2
 vobject==0.6.6
 wsgiref==0.1.2
 xlwt==0.7.5
-'' else if odooVersion == 10 then ''
+'' else if odooMajorVersion == 10 then ''
 Babel==2.3.4
 decorator==4.0.10
 docutils==0.12
 ebaysdk==2.1.4
 feedparser==5.2.1
+gevent==1.1.2
+greenlet==0.4.10
 jcconv==0.2.3
 Jinja2==2.10.1
+lxml==3.5.0
 Mako==1.0.4
 MarkupSafe==0.23
 mock==2.0.0
 ofxparse==0.16
 passlib==1.6.5
+Pillow==3.4.1
 psutil==4.3.1
 psycogreen==1.0
+psycopg2==2.7.7
 pydot==1.2.3
 pyparsing==2.1.10
 pyPdf==1.13
 pyserial==3.1.1
 Python-Chart==1.39
 python-dateutil==2.5.3
+python-ldap==2.4.27
 python-openid==2.2.5
 pytz==2016.7
 pyusb==1.0.0
@@ -130,66 +126,70 @@ wsgiref==0.1.2
 XlsxWriter==0.9.3
 xlwt==1.1.2
 xlrd==1.0.0
-'' else if odooVersion == 11 then ''
+'' else if odooMajorVersion == 11 then ''
 Babel==2.3.4
 decorator==4.0.10
 docutils==0.12
 ebaysdk==2.1.5
 feedparser==5.2.1
+gevent==1.1.2
+greenlet==0.4.10
 html2text==2016.9.19
 Jinja2==2.10.1
+lxml==3.7.1
 Mako==1.0.4
 MarkupSafe==0.23
 mock==2.0.0
 num2words==0.5.6
 ofxparse==0.16
 passlib==1.6.5
-phonenumbers
-psutil==4.3.1; sys_platform != 'win32'
-psutil==5.6.3; sys_platform == 'win32'
+phonenumbers==9.0.7
+Pillow==4.0.0
+psutil==4.3.1
+psycopg2==2.7.7
 pydot==1.2.3
-pyldap==2.4.28; sys_platform != 'win32'
+pyldap==2.4.28
 pyparsing==2.1.10
 PyPDF2==1.26.0
 pyserial==3.1.1
 python-dateutil==2.5.3
-# vatnumber requirement. Last version compatible
-python-stdnum<=1.14
+python-stdnum==1.14
 pytz==2016.7
 pyusb==1.0.0
-PyYAML==3.12 ; python_version < '3.7'
-PyYAML==3.13 ; python_version >= '3.7'
+PyYAML==3.12
 qrcode==5.3
 reportlab==3.3.0
 requests==2.20.0
 suds-jurko==0.6
 vatnumber==1.2
 vobject==0.9.3
-Werkzeug==0.11.15 ; sys_platform != 'win32'
-Werkzeug==0.16.0  ; sys_platform == 'win32'
+Werkzeug==0.11.15
 XlsxWriter==0.9.3
-xlwt==1.3.*
+xlwt==1.3.0
 xlrd==1.0.0
-pypiwin32 ; sys_platform == 'win32'
-'' else if odooVersion == 12 then ''
+'' else if odooMajorVersion == 12 then ''
 Babel==2.3.4
 chardet==3.0.4
 decorator==4.0.10
 docutils==0.12
 ebaysdk==2.1.5
+gevent==1.1.2
+greenlet==0.4.10
 html2text==2016.9.19
 Jinja2==2.10.1
 libsass==0.12.3
+lxml==3.7.1
 Mako==1.0.4
 MarkupSafe==0.23
 mock==2.0.0
 num2words==0.5.6
 ofxparse==0.16
 passlib==1.6.5
-psutil==4.3.1; sys_platform != 'win32'
-psutil==5.6.3; sys_platform == 'win32'
+Pillow==4.0.0
+psutil==4.3.1
+psycopg2==2.7.7
 pydot==1.2.3
-pyldap==2.4.28; sys_platform != 'win32'
+pyldap==2.4.28
 pyparsing==2.1.10
 PyPDF2==1.26.0
 pyserial==3.1.1
@@ -201,30 +201,34 @@ reportlab==3.3.0
 requests==2.20.0
 suds-jurko==0.6
 vobject==0.9.3
-Werkzeug==0.11.15 ; sys_platform != 'win32'
-Werkzeug==0.16.0  ; sys_platform == 'win32'
+Werkzeug==0.11.15
 XlsxWriter==0.9.3
 python-stdnum==1.8
-xlwt==1.3.*
+xlwt==1.3.0
 xlrd==1.0.0
-'' else if odooVersion == 13 then ''
+'' else if odooMajorVersion == 13 then ''
 Babel==2.6.0
 chardet==3.0.4
 decorator==4.3.0
 docutils==0.14
 ebaysdk==2.1.5
+gevent==1.2.2
+greenlet==0.4.10
 Jinja2==2.10.1
 libsass==0.17.0
-lxml==4.3.2
+lxml==3.7.1
 Mako==1.0.7
 MarkupSafe==1.1.0
 mock==2.0.0
 num2words==0.5.6
 ofxparse==0.19
 passlib==1.7.1
+Pillow==5.4.1
 polib==1.1.0
 psutil==5.6.6
+psycopg2==2.7.7
 pydot==1.4.1
+python-ldap==3.1.0
 pyparsing==2.2.0
 PyPDF2==1.26.0
 pyserial==3.4
@@ -235,69 +239,79 @@ qrcode==6.1
 reportlab==3.5.13
 requests==2.21.0
 zeep==3.2.0
-vatnumber==1.2
+vatnumber==1.0
 vobject==0.9.6.1
 Werkzeug==0.14.1
 XlsxWriter==1.1.2
 xlwt==1.3.0
 xlrd==1.1.0
-'' else if odooVersion == 14 then ''
-Babel==2.9.1
+'' else if odooMajorVersion == 14 then ''
+Babel==2.6.0
 chardet==3.0.4
 decorator==4.3.0
 docutils==0.14
 ebaysdk==2.1.5
-freezegun==0.3.15
+freezegun==0.3.11
+gevent==1.2.2
+greenlet==0.4.10
 idna==2.6
-Jinja2==2.11.2
+Jinja2==2.10.1
 libsass==0.17.0
-lxml==4.6.5
+lxml==3.7.1
 Mako==1.0.7
 MarkupSafe==1.1.0
 num2words==0.5.6
-ofxparse==0.21
+ofxparse==0.19
 passlib==1.7.1
+Pillow==5.4.1
 polib==1.1.0
 psutil==5.6.6
+psycopg2==2.7.7
 pydot==1.4.1
+python-ldap==3.1.0
 PyPDF2==1.26.0
 pyserial==3.4
 python-dateutil==2.7.3
 pytz==2025.2
 pyusb==1.0.2
 qrcode==6.1
-reportlab==3.5.55
-requests==2.25.1
-urllib3==1.26.5
+reportlab==3.5.13
+requests==2.21.0
 zeep==3.2.0
 python-stdnum==1.8
 vobject==0.9.6.1
-Werkzeug==2.0.2
+Werkzeug==0.16.1
 XlsxWriter==1.1.2
 xlwt==1.3.0
-xlrd==1.2.0
-'' else if odooVersion == 15 then ''
+xlrd==1.1.0
+'' else if odooMajorVersion == 15 then ''
 Babel==2.9.1
 chardet==3.0.4
-decorator==4.3.0
-docutils==0.14
+cryptography==2.6.1
+decorator==4.4.2
+docutils==0.16
 ebaysdk==2.1.5
-freezegun==0.3.15
-idna==2.6
-Jinja2==2.11.2
-libsass==0.17.0
+freezegun==0.3.11
+gevent==1.5.0
+greenlet==0.4.15
+idna==2.8
+Jinja2==2.11.3
+libsass==0.18.0
 lxml==4.6.5
-Mako==1.0.7
 MarkupSafe==1.1.0
 num2words==0.5.6
-ofxparse==0.21
-passlib==1.7.1
+ofxparse==0.19
+passlib==1.7.3
+Pillow==9.0.1
 polib==1.1.0
-psutil==5.6.6
+psutil==5.6.7
+psycopg2==2.8.6
 pydot==1.4.1
+pyopenssl==19.0.0
 PyPDF2==1.26.0
 pyserial==3.4
 python-dateutil==2.7.3
+python-ldap==3.4.0
 python-stdnum==1.13
 pytz==2025.2
 pyusb==1.0.2
@@ -306,12 +320,12 @@ reportlab==3.5.59
 requests==2.25.1
 urllib3==1.26.5
 vobject==0.9.6.1
-Werkzeug==2.0.2
-xlrd==1.2.0
+Werkzeug==0.16.1
+xlrd==1.1.0
 XlsxWriter==1.1.2
 xlwt==1.3.0
 zeep==3.4.0
-'' else if odooVersion == 16 then ''
+'' else if odooMajorVersion == 16 then ''
 Babel==2.9.1
 chardet==4.0.0
 cryptography==3.4.8
@@ -319,21 +333,26 @@ decorator==4.4.2
 docutils==0.16
 ebaysdk==2.1.5
 freezegun==0.3.15
+gevent==20.9.0
+greenlet==0.4.17
 idna==2.10
 Jinja2==2.11.3
 libsass==0.20.1
 lxml==4.6.5
 MarkupSafe==1.1.1
 num2words==0.5.9
-ofxparse==0.21
+ofxparse==0.19
 passlib==1.7.4
+Pillow==9.0.1
 polib==1.1.0
 psutil==5.8.0
+psycopg2==2.8.6
 pydot==1.4.2
 pyopenssl==20.0.1
 PyPDF2==1.26.0
 pyserial==3.5
 python-dateutil==2.8.1
+python-ldap==3.4.0
 python-stdnum==1.16
 pytz==2025.2
 pyusb==1.0.2
@@ -342,42 +361,91 @@ reportlab==3.5.59
 requests==2.25.1
 urllib3==1.26.5
 vobject==0.9.6.1
-Werkzeug==2.0.2
+Werkzeug==0.16.1
 xlrd==1.2.0
 XlsxWriter==1.1.2
 xlwt==1.3.0
 zeep==4.0.0
-'' else if odooVersion == 17 then ''
+'' else if odooMajorVersion == 17 then ''
+asn1crypto==1.4.0 
 Babel==2.9.1
+cbor2==5.4.2
 chardet==4.0.0
 cryptography==3.4.8
 decorator==4.4.2
 docutils==0.17
-ebaysdk==2.1.5
 freezegun==1.1.0
 geoip2==2.9.0
+gevent==21.12.0
+greenlet==1.1.2
 idna==2.10
 Jinja2==3.0.3
 libsass==0.20.1
 lxml==4.8.0
-lxml-html-clean
 MarkupSafe==2.0.1
 num2words==0.5.10
 ofxparse==0.21
+openpyxl==3.0.9
 passlib==1.7.4
+Pillow==9.0.1
 polib==1.1.1
 psutil==5.9.0 
-pydot==1.4.2
+psycopg2==2.9.2
 pyopenssl==21.0.0
 PyPDF2==1.26.0
 pyserial==3.5
 python-dateutil==2.8.1
+python-ldap==3.4.0
+python-stdnum==1.17
+pytz==2025.2
+pyusb==1.2.1
+qrcode==7.3.1 
+reportlab==3.6.8
+requests==2.25.1
+rjsmin==1.1.0
+urllib3==1.26.5
+vobject==0.9.6.1
+Werkzeug==2.0.2 
+xlrd==1.2.0
+XlsxWriter==3.0.2
+xlwt==1.3.0
+zeep==4.1.0
+'' else if odooMajorVersion == 18 then ''
+asn1crypto==1.4.0
+Babel==2.9.1
+cbor2==5.4.2
+chardet==4.0.0
+cryptography==3.4.8
+decorator==4.4.2
+docutils==0.17
+freezegun==1.1.0
+geoip2==2.9.0
+gevent==21.12.0
+greenlet==1.1.2
+idna==2.10
+Jinja2==3.0.3
+libsass==0.20.1
+lxml==4.8.0
+MarkupSafe==2.0.1
+num2words==0.5.10
+ofxparse==0.21
+openpyxl==3.0.9
+passlib==1.7.4
+Pillow==9.0.1
+polib==1.1.1
+psutil==5.9.0
+psycopg2==2.9.2
+pyopenssl==21.0.0
+PyPDF2==1.26.0
+pyserial==3.5
+python-dateutil==2.8.1
+python-ldap==3.4.0
 python-stdnum==1.17
 pytz==2025.2
 pyusb==1.2.1
 qrcode==7.3.1
 reportlab==3.6.8
-requests==2.25.1
+requests==2.25.1 
 rjsmin==1.1.0
 urllib3==1.26.5
 vobject==0.9.6.1
