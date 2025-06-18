@@ -38,7 +38,7 @@
           pythonMinorVersion = lib.strings.toInt (lib.versions.minor pythonVersion);
 
           pythonPackage = pkgs.stdenv.mkDerivation (finalAttrs: rec {
-            name = "python";
+            pname = "python";
             version = pythonVersion;
             src = pkgs.fetchurl {
 			  url = "https://www.python.org/ftp/python/${finalAttrs.version}/Python-${finalAttrs.version}.tar.xz";
@@ -112,19 +112,14 @@ ODOO_VERSION=${config.odooVersion}
 DEFAULT_MERGE_DEPTH=100
 '';
 
-		  commands = {
+		  commands = rec {
 
 			setup = with pkgs; writeShellScriptBin "setup" ''
-#!/usr/bin/bash
+#!/usr/bin/env bash
 set -e
 mkdir -p {etc,wax/{addons,log,repos}}
 touch etc/requirements.txt
 touch etc/repos.yaml
-
-# Create a .gitignore if it doesn't exist yet, for convenience
-if [ ! -f .gitignore ]; then
-  echo "wax" > .gitignore
-fi
 
 # Create some necessary files
 cat > wax/env-variables <<HEREDOC
@@ -142,20 +137,22 @@ VENV_PYTHON="wax/venv/bin/$PYTHON"
 
 # Provide some compiler flags to help the required python packages to be compiled.
 # Perhaps older versions of python or pip doesn't use pkg-config.
-export CFLAGS="$CFLAGS "\
-"-I${cyrus_sasl.dev}/include/sasl "\
-"$(pkg-config --cflags libjpeg) "\
-"$(pkg-config --cflags libxml-2.0) "\
-"$(pkg-config --cflags libxslt) "\
-"$(pkg-config --cflags zlib)"
-export LDFLAGS="$LDFLAGS "\
-"-L$(pwd)/wax/venv/lib -L${cyrus_sasl}/lib "\
-"$(pkg-config --libs-only-L libjpeg) "\
-"$(pkg-config --libs-only-L lber) "\
-"$(pkg-config --libs-only-L ldap) "\
-"$(pkg-config --libs-only-L libxml-2.0) "\
-"$(pkg-config --libs-only-L libxslt) "\
-"$(pkg-config --libs-only-L zlib)"
+if [ ${toString odooMajorVersion} -lt 11 ]; then
+  export CFLAGS="$CFLAGS "\
+    "-I${cyrus_sasl.dev}/include/sasl "\
+    "$(pkg-config --cflags libjpeg) "\
+    "$(pkg-config --cflags libxml-2.0) "\
+    "$(pkg-config --cflags libxslt) "\
+    "$(pkg-config --cflags zlib)"
+  export LDFLAGS="$LDFLAGS "\
+    "-L$(pwd)/wax/venv/lib -L${cyrus_sasl}/lib "\
+    "$(pkg-config --libs-only-L libjpeg) "\
+    "$(pkg-config --libs-only-L lber) "\
+    "$(pkg-config --libs-only-L ldap) "\
+    "$(pkg-config --libs-only-L libxml-2.0) "\
+    "$(pkg-config --libs-only-L libxslt) "\
+    "$(pkg-config --libs-only-L zlib)"
+fi
 
 if [ ! -e wax/venv ]; then
   mkdir -p wax/tmp
@@ -164,7 +161,9 @@ if [ ! -e wax/venv ]; then
 
   # Fake the libldap_r binary to be available
   # Older versions of python-ldap require it instead of the standard version, but nix doesn't have that binary
-  ln -f -s ${openldap}/lib/libldap.so wax/venv/lib/libldap_r.so
+  if [ ${toString odooMajorVersion} -lt 15 ]; then
+    ln -f -s ${openldap}/lib/libldap.so wax/venv/lib/libldap_r.so
+  fi
 
   $VENV_PYTHON -m pip install pip==${pipVersion}
 
@@ -195,6 +194,7 @@ set -e
 rm -rf wax/tmp/*
 
 # Update repos with git-aggregator
+echo Aggregating repositories...
 (
   cd wax/repos
   gitaggregate -c ../../etc/repos.yaml --expand-env --env-file ../env-variables
@@ -206,20 +206,39 @@ if [ ! -d wax/repos/odoo ]; then
   exit 1
 fi
 
-# Add all modules' links in one directory
-rm -r wax/addons || true
-mkdir wax/addons
-for REPO in $(ls -r wax/repos); do
-  if [ "$REPO" != "odoo" ]; then
-    ls "wax/repos/$REPO" | xargs -I{} ln -f -s "$(pwd)/wax/repos/odoo/addons/{}" "wax/addons/{}"
-  fi
-done
-ls wax/repos/odoo/addons | xargs -I{} ln -f -s "$(pwd)/wax/repos/odoo/addons/{}" "wax/addons/{}"
-
-build-config
+echo Linking addons...
+${build-addons}/bin/build-addons
+echo Generating odoo config...
+${build-config}/bin/build-config
+echo Done.
 '';
 
+            build-addons = with pkgs; writeShellScriptBin "build-addons" ''
+              #!/usr/bin/env bash
+              set -e
+
+              link_addons() {
+                for ADDON in $(ls wax/repos/$2); do
+                  if [ "$(yq .$1.addons etc/repos.yaml)" == "null" ] || \
+                     [ "$(yq ".$1.addons | index(\"$ADDON\")" etc/repos.yaml)" != "null" ]
+                  then
+                    ln -f -s "$(pwd)/wax/repos/$2/$ADDON" "wax/addons/$ADDON"
+                  fi
+                done
+              }
+
+              rm -r wax/addons || true
+              mkdir wax/addons
+			  for REPO in $(ls wax/repos); do
+				if [ "$REPO" != "" ]; then
+                  link_addons $REPO $REPO
+				fi
+			  done
+              link_addons odoo odoo/addons
+			'';
+
 			build-config = with pkgs; writeShellScriptBin "build-config" ''
+#!/usr/bin/env bash
 set -e
 cat > wax/odoo.cfg <<HEREDOC
 ${lib.generators.toINI {} odooConfig}
@@ -227,7 +246,7 @@ HEREDOC
 '';
 
 			run = pkgs.writeShellScriptBin "run" ''
-#!/usr/bin/bash
+#!/usr/bin/env bash
 if [ ${toString odooMajorVersion} -lt 10 ]; then
   wax/venv/bin/python wax/repos/odoo/odoo.py -c wax/odoo.cfg ''$@
 else
@@ -245,12 +264,14 @@ fi
 '';
           };
         in pkgs.mkShell {
-          packages = with pkgs; [
+          packages = with commands; [
             commands.build
-            commands.build-config
+			commands.build-addons
+			commands.build-config
             commands.run
             commands.setup
             commands.shell
+		  ] ++ (with pkgs; [
             cyrus_sasl
             stdenv.cc.cc.lib
             git-aggregator
@@ -263,15 +284,15 @@ fi
             pythonPackage
             wget
             wkhtmltopdf
+			yq
           # Dependencies of python packages:
-          ] ++ (lib.optionals (odooMajorVersion < 11) [
+          ]) ++ (lib.optionals (odooMajorVersion < 11) [
             libxcrypt-legacy # psycopg2 2.8 uses it
             zlib # Pillow 3.3
             libjpeg # Pillow 3.3
           ]);
 
           shellHook = with pkgs; ''
-set -e
 alias python="${pythonPackage}/bin/python${lib.versions.majorMinor pythonVersion}"
 export PYTHONPATH="${pythonPackage}/lib/site-packages"
 # Python 3.6 may fail if this environment variable is set to something
@@ -280,7 +301,7 @@ export LD_LIBRARY_PATH=\
 "${stdenv.cc.cc.lib}/lib:"\
 "${libxcrypt-legacy}/lib"
 
-setup
+${commands.setup}/bin/setup
 '';
         };
 
