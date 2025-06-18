@@ -6,6 +6,50 @@
   };
 
   outputs = { self, nixpkgs }: {
+      lib.mkOdooVirtualContainerShell = { hostSystem, targetSystem, qemuTargetSystem, config }:
+        let
+          lib = nixpkgs.lib;
+
+          pkgs = nixpkgs.legacyPackages.${hostSystem};
+          pkgsTarget = nixpkgs.legacyPackages.${targetSystem};
+
+          vm = pkgs.stdenv.mkDerivation rec {
+            pname = "vm";
+            version = "0.0.0";
+            src = pkgs.fetchzip {
+              url = "https://github.com/bamidev/wax-vm-image/wax-vm-image.tar.gz";
+              hash = "sha256-tWxU/LANbQE32my+9AXyt3nCT7NBVfJ45CX757EMT3Q=";
+            };
+
+            buildPhase = ''
+              set -ex
+
+              rm -f vm.img
+              ${pkgs.qemu_kvm}/bin/qemu-img create -f qcow2 vm.img 32G
+              ${pkgs.qemu_kvm}/bin/qemu-system-x86_64 -nographic -enable-kvm -boot d \
+                -cdrom *.iso -m 4G -cpu host -smp 2 -hda vm.img
+            '';
+
+            installPhase = ''
+              mv vm.img $out/vm.img
+            '';
+          };
+
+          runVm = pkgs.writeScriptBin "build-vm" ''
+              #!${pkgs.bash}/bin/bash
+              set -ex
+
+              # Copy initial VM image if it doesn't exist yet
+              mkdir -p wax
+              if [ ! -f wax/vm.img ]; then
+                cp ${vm.out}/vm.img wax/vm.img
+              fi
+
+              ${pkgs.qemu_kvm}/bin/qemu-system-x86_64 -nographic -enable-kvm -boot d \
+                -m 4G -cpu host -smp 2 -hda wax/vm.img
+          '';
+        in runVm;
+
       lib.mkOdooShell = { system, config }:
         let
           lib = nixpkgs.lib;
