@@ -37,7 +37,7 @@
 
           runVm = pkgs.writeScriptBin "build-vm" ''
               #!${pkgs.bash}/bin/bash
-              set -ex
+              set -e
 
               # Copy initial VM image if it doesn't exist yet
               mkdir -p wax
@@ -183,20 +183,29 @@ VENV_PYTHON="wax/venv/bin/$PYTHON"
 # Perhaps older versions of python or pip doesn't use pkg-config.
 if [ ${toString odooMajorVersion} -lt 11 ]; then
   export CFLAGS="$CFLAGS "\
-    "-I${cyrus_sasl.dev}/include/sasl "\
-    "$(pkg-config --cflags libjpeg) "\
-    "$(pkg-config --cflags libxml-2.0) "\
-    "$(pkg-config --cflags libxslt) "\
-    "$(pkg-config --cflags zlib)"
+"$(pkg-config --cflags libjpeg) "\
+"$(pkg-config --cflags libxml-2.0) "\
+"$(pkg-config --cflags libxslt) "\
+"$(pkg-config --cflags zlib)"
   export LDFLAGS="$LDFLAGS "\
-    "-L$(pwd)/wax/venv/lib -L${cyrus_sasl}/lib "\
-    "$(pkg-config --libs-only-L libjpeg) "\
-    "$(pkg-config --libs-only-L lber) "\
-    "$(pkg-config --libs-only-L ldap) "\
-    "$(pkg-config --libs-only-L libxml-2.0) "\
-    "$(pkg-config --libs-only-L libxslt) "\
-    "$(pkg-config --libs-only-L zlib)"
+"$(pkg-config --libs-only-L libjpeg) "\
+"$(pkg-config --libs-only-L lber) "\
+"$(pkg-config --libs-only-L ldap) "\
+"$(pkg-config --libs-only-L libxml-2.0) "\
+"$(pkg-config --libs-only-L libxslt) "\
+"$(pkg-config --libs-only-L zlib)"
 fi
+if [ ${toString odooMajorVersion} -lt 13 ]; then
+  export CFLAGS="$CFLAGS "\
+"-I${cyrus_sasl.dev}/include/sasl"
+  export LDFLAGS="$LDFLAGS "\
+"-L${cyrus_sasl}/lib"
+fi
+if [ ${toString odooMajorVersion} -lt 15 ]; then
+  export LDFLAGS="$LDFLAGS "\
+"-L$(pwd)/wax/venv/lib"
+fi
+
 
 if [ ! -e wax/venv ]; then
   mkdir -p wax/tmp
@@ -328,13 +337,13 @@ fi
             pythonPackage
             wget
             wkhtmltopdf
-			yq
+            yq
           # Dependencies of python packages:
-          ]) ++ (lib.optionals (odooMajorVersion < 11) [
+          ]) ++ (lib.optionals (odooMajorVersion < 11) (with pkgs; [
             libxcrypt-legacy # psycopg2 2.8 uses it
             zlib # Pillow 3.3
             libjpeg # Pillow 3.3
-          ]);
+          ]));
 
           shellHook = with pkgs; ''
 alias python="${pythonPackage}/bin/python${lib.versions.majorMinor pythonVersion}"
