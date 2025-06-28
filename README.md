@@ -86,6 +86,9 @@ OCA/partner-contact:
 ```
 This makes the above 3 addons available in `wax/addons`, which is set as the `addons_path` setting in the Odoo configuration by default.
 
+There are pre-defined variables available in this yaml file, as you might have noticed in the example above.
+In a wax environment that has already been set up, the available variables can be found in the `wax/env-variables` file.
+
 `etc/requirements.txt`:
 This is the usual requirements.txt file that will be used to install Python package in the virtual environment located in `wax/venv`.
 There are other (default) packages that are being installed first though.
