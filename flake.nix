@@ -318,12 +318,12 @@ fi
           };
         in pkgs.mkShell {
           packages = with commands; [
-            commands.build
-			commands.build-addons
-			commands.build-config
-            commands.run
-            commands.setup
-            commands.shell
+            build
+            build-addons
+            build-config
+            run
+            setup
+            shell
 		  ] ++ (with pkgs; [
             cyrus_sasl
             stdenv.cc.cc.lib
