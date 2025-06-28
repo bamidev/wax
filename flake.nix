@@ -152,6 +152,7 @@ export LDFLAGS="-L${zlib.out}/lib -L${libffi.out}/lib -L${readline.out}/lib -L${
           };
 
 		  envVariables = ''
+DATABASE_NAME=${config.databaseName}
 ODOO_VERSION=${config.odooVersion}
 DEFAULT_MERGE_DEPTH=100
 '';
