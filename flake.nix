@@ -202,7 +202,7 @@ if [ ${toString odooMajorVersion} -lt 13 ]; then
   export LDFLAGS="$LDFLAGS "\
 "-L${cyrus_sasl}/lib"
 fi
-if [ ${toString odooMajorVersion} -lt 15 ]; then
+if [ ${toString odooMajorVersion} -lt 17 ]; then
   export LDFLAGS="$LDFLAGS "\
 "-L$(pwd)/wax/venv/lib"
 fi
@@ -215,7 +215,7 @@ if [ ! -e wax/venv ]; then
 
   # Fake the libldap_r binary to be available
   # Older versions of python-ldap require it instead of the standard version, but nix doesn't have that binary
-  if [ ${toString odooMajorVersion} -lt 15 ]; then
+  if [ ${toString odooMajorVersion} -lt 17 ]; then
     ln -f -s ${openldap}/lib/libldap.so wax/venv/lib/libldap_r.so
   fi
 
