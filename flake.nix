@@ -356,6 +356,7 @@ export LD_LIBRARY_PATH=\
 "${libxcrypt-legacy}/lib"
 
 ${commands.setup}/bin/setup
+. wax/venv/bin/activate
 '';
         };
 
