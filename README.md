@@ -58,7 +58,7 @@ Here is an example Nix flake for you Odoo project:
     partner-contact = {
       # When url attribute is not set, will default to https://github.com/OCA/partner-contact.git
       remotes = {
-        therp = "https://github.com/Therp/partner-contact";
+        therp = "https://github.com/Therp/partner-contact.git";
       };
       # When multiple branches from the same repo need to be merged in, we can't use attrsets, so
       # use lists instead:
