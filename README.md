@@ -56,7 +56,7 @@ Here is an example Nix flake for you Odoo project:
     }
 
     partner-contact = {
-      url = "https://github.com/OCA/partner-contact";
+      # When url attribute is not set, will default to https://github.com/OCA/partner-contact.git
       remotes = {
         therp = "https://github.com/Therp/partner-contact";
       };

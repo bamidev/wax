@@ -137,7 +137,18 @@
   
       '' + lib.strings.concatStrings (
         lib.attrsets.mapAttrsToList (repoName: repoConfig:
-          "    remotes = {\"${repoName}\": \"${repoConfig.url}\", " + (lib.strings.concatStringsSep ", " (
+          let
+            repoRef = if repoConfig ? ref then
+                repoConfig.ref
+              else
+                config.reposDefaultRef;
+            repoUrl = if repoConfig ? url then
+                repoConfig.url
+              else if repoName == "odoo" then
+                "https://github.com/OCA/OCB.git"
+              else
+                "https://github.com/OCA/" + repoName + ".git";
+          in "    remotes = {\"${repoName}\": \"${repoUrl}\", " + (lib.strings.concatStringsSep ", " (
             lib.attrsets.mapAttrsToList (remoteName: remoteUrl:
               "\"${remoteName}\": \"${remoteUrl}\""
             ) (repoConfig.remotes or {})
@@ -156,10 +167,5 @@
             else
               [""]
           )) + "]\n" +
-  "    repo_aggregate(\"${repoName}\", \"${repoConfig.url}\", \"${
-    if repoConfig ? ref then
-      repoConfig.ref
-    else
-      config.reposDefaultRef
-  }\", remotes, merges)\n") config.repos) +
+  "    repo_aggregate(\"${repoName}\", \"${repoUrl}\", \"${repoRef}\", remotes, merges)\n") config.repos) +
   "\n\nmain()\n"
