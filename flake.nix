@@ -19,6 +19,8 @@
               "python-lsp-server[all]"
               "git+https://github.com/ddejong-therp/odoo-repl@master"
             ];
+
+            reposDefaultRef = config.odooVersion;
           };
           completeConfig = lib.attrsets.recursiveUpdate defaultConfig config;
 

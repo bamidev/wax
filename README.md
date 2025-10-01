@@ -46,7 +46,6 @@ Here is an example Nix flake for you Odoo project:
 
   repos = {
     odoo = {
-      ref = "16.0";
       url = "https://github.com/odoo/odoo.git";
       remotes = {   # Git remotes here
         bamidev = "https://github.com/bamidev/odoo.git";
@@ -57,7 +56,6 @@ Here is an example Nix flake for you Odoo project:
     }
 
     partner-contact = {
-      ref = "16.0";
       url = "https://github.com/OCA/partner-contact";
       remotes = {
         therp = "https://github.com/Therp/partner-contact";

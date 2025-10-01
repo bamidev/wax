@@ -156,5 +156,10 @@
             else
               [""]
           )) + "]\n" +
-  "    repo_aggregate(\"${repoName}\", \"${repoConfig.url}\", \"${repoConfig.ref}\", remotes, merges)\n") config.repos) +
+  "    repo_aggregate(\"${repoName}\", \"${repoConfig.url}\", \"${
+    if repoConfig ? ref then
+      repoConfig.ref
+    else
+      config.reposDefaultRef
+  }\", remotes, merges)\n") config.repos) +
   "\n\nmain()\n"
