@@ -46,6 +46,7 @@ Here is an example Nix flake for you Odoo project:
 
   repos = {
     odoo = {
+      ref = "16.0";
       url = "https://github.com/odoo/odoo.git";
       remotes = {   # Git remotes here
         bamidev = "https://github.com/bamidev/odoo.git";
@@ -56,7 +57,8 @@ Here is an example Nix flake for you Odoo project:
     }
 
     partner-contact = {
-      # When url attribute is not set, will default to https://github.com/OCA/partner-contact.git
+      # When the ref attribute is not set, will default to what is in odooVersion
+      # When the url attribute is not set, will default to https://github.com/OCA/partner-contact.git
       remotes = {
         therp = "https://github.com/Therp/partner-contact.git";
       };
@@ -67,6 +69,10 @@ Here is an example Nix flake for you Odoo project:
         ["therp" "16.0-add-partner_multi_relation_function"]
       ];
     };
+
+    # Leaving these empty means you will get standard server-tools and web repos from the OCA
+    server-tools = {};
+    web = {};
   };
 
   pythonRequirements = [
