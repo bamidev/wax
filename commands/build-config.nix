@@ -9,7 +9,8 @@ let
     };
   };
   odooConfig = lib.attrsets.recursiveUpdate defaultOdooConfig config.odooConfig;
-in ''
+in
+''
   set -e
   cat > wax/odoo.cfg <<HEREDOC
   ${lib.generators.toINI { } odooConfig}

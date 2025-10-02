@@ -22,7 +22,7 @@
 
             repos = {
               defaultRef = config.odooVersion;
-              spec = {};
+              spec = { };
             };
           };
           completeConfig = lib.attrsets.recursiveUpdate defaultConfig config;
@@ -148,15 +148,21 @@
                 lib = lib;
               }
             );
-            build-repos = pkgs.writers.writePython3Bin "build-repos" {
-              flakeIgnore = [ "E265" "E501" ];
-            } (
-              import ./commands/build-repos.nix {
-                config = completeConfig;
-                lib = lib;
-                pkgs = pkgs;
-              }
-            );
+            build-repos =
+              pkgs.writers.writePython3Bin "build-repos"
+                {
+                  flakeIgnore = [
+                    "E265"
+                    "E501"
+                  ];
+                }
+                (
+                  import ./commands/build-repos.nix {
+                    config = completeConfig;
+                    lib = lib;
+                    pkgs = pkgs;
+                  }
+                );
             build-venv = pkgs.writers.writeBashBin "build-venv" (
               import ./commands/build-venv.nix {
                 config = completeConfig;

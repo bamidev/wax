@@ -1,4 +1,9 @@
-{ config, lib, pkgs }: ''
+{
+  config,
+  lib,
+  pkgs,
+}:
+''
   import json
   from os import path
   import subprocess
@@ -7,16 +12,16 @@
   locks = {}
 
   DEEPEN_STEP = ${
-    if config ? repos && config.repos ? deepenStep then toString config.repos.deepenStep
-    else "250"
+    if config ? repos && config.repos ? deepenStep then toString config.repos.deepenStep else "250"
   }
   DEEPEN_STEP_MERGE = ${
-    if config ? repos && config.repos ? deepenStepMerge then toString config.repos.deepenStepMerge
-    else "25"
+    if config ? repos && config.repos ? deepenStepMerge then
+      toString config.repos.deepenStepMerge
+    else
+      "25"
   }
   INITIAL_DEPTH = ${
-    if config ? repos && config.repos ? initialDepth then toString config.repos.initialDepth
-    else "25"
+    if config ? repos && config.repos ? initialDepth then toString config.repos.initialDepth else "25"
   }
   INITIAL_DEPTH_MERGE = ${
     if config ? repos && config.repos ? initialDepthMerge then
@@ -152,38 +157,43 @@
   def main():
       load_locks()
       subprocess.run(["${pkgs.coreutils}/bin/mkdir", "-p", "wax/repos"])
-  
-      '' + lib.strings.concatStrings (
-        lib.attrsets.mapAttrsToList (repoName: repoConfig:
-          let
-            repoRef = if repoConfig ? ref then
-                repoConfig.ref
-              else
-                config.repos.defaultRef;
-            repoUrl = if repoConfig ? url then
-                repoConfig.url
-              else if repoName == "odoo" then
-                "https://github.com/OCA/OCB.git"
-              else
-                "https://github.com/OCA/" + repoName + ".git";
-          in "    remotes = {\"${repoName}\": \"${repoUrl}\", " + (lib.strings.concatStringsSep ", " (
-            lib.attrsets.mapAttrsToList (remoteName: remoteUrl:
-              "\"${remoteName}\": \"${remoteUrl}\""
-            ) (repoConfig.remotes or {})
-          )) + "}\n    merges = [" + (lib.strings.concatStringsSep ", " (
-            if repoConfig ? merges then
-              if builtins.isAttrs repoConfig.merges then
-                lib.attrsets.mapAttrsToList (remoteName: remoteRef:
-                  "(\"${remoteName}\", \"${remoteRef}\")"
-                ) repoConfig.merges
-              else if builtins.isList repoConfig.merges then
-                lib.lists.forEach repoConfig.merges (x:
-                  "(\"${builtins.elemAt x 0}\", \"${builtins.elemAt x 1}\")"
-                )
-              else
-                [""]
-            else
-              [""]
-          )) + "]\n" +
-  "    repo_aggregate(\"${repoName}\", \"${repoUrl}\", \"${repoRef}\", remotes, merges)\n") config.repos.spec) +
-  "\n\nmain()\n"
+
+''
++ lib.strings.concatStrings (
+  lib.attrsets.mapAttrsToList (
+    repoName: repoConfig:
+    let
+      repoRef = if repoConfig ? ref then repoConfig.ref else config.repos.defaultRef;
+      repoUrl =
+        if repoConfig ? url then
+          repoConfig.url
+        else if repoName == "odoo" then
+          "https://github.com/OCA/OCB.git"
+        else
+          "https://github.com/OCA/" + repoName + ".git";
+    in
+    "    remotes = {\"${repoName}\": \"${repoUrl}\", "
+    + (lib.strings.concatStringsSep ", " (
+      lib.attrsets.mapAttrsToList (remoteName: remoteUrl: "\"${remoteName}\": \"${remoteUrl}\"") (
+        repoConfig.remotes or { }
+      )
+    ))
+    + "}\n    merges = ["
+    + (lib.strings.concatStringsSep ", " (
+      if repoConfig ? merges then
+        if builtins.isAttrs repoConfig.merges then
+          lib.attrsets.mapAttrsToList (
+            remoteName: remoteRef: "(\"${remoteName}\", \"${remoteRef}\")"
+          ) repoConfig.merges
+        else if builtins.isList repoConfig.merges then
+          lib.lists.forEach repoConfig.merges (x: "(\"${builtins.elemAt x 0}\", \"${builtins.elemAt x 1}\")")
+        else
+          [ "" ]
+      else
+        [ "" ]
+    ))
+    + "]\n"
+    + "    repo_aggregate(\"${repoName}\", \"${repoUrl}\", \"${repoRef}\", remotes, merges)\n"
+  ) config.repos.spec
+)
++ "\n\nmain()\n"
