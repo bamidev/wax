@@ -6,8 +6,24 @@
 
   locks = {}
 
-  DEEPEN_STEP = ${if config ? reposDeepenStep then toString config.reposDeepenStep else "250"}
-  DEEPEN_STEP_MERGE = ${if config ? reposDeepenStepMerge then toString config.reposDeepenStepMerge else "25"}
+  DEEPEN_STEP = ${
+    if config ? repos && config.repos ? deepenStep then toString config.repos.deepenStep
+    else "250"
+  }
+  DEEPEN_STEP_MERGE = ${
+    if config ? repos && config.repos ? deepenStepMerge then toString config.repos.deepenStepMerge
+    else "25"
+  }
+  INITIAL_DEPTH = ${
+    if config ? repos && config.repos ? initialDepth then toString config.repos.initialDepth
+    else "25"
+  }
+  INITIAL_DEPTH_MERGE = ${
+    if config ? repos && config.repos ? initialDepthMerge then
+      toString config.repos.initialDepthMerge
+    else
+      "25"
+  }
 
 
   def check_hash(remote, ref, repo_path):
@@ -73,7 +89,7 @@
       commit = None
       repo_path = path.join("wax/repos", name)
       if not path.isdir(repo_path):
-          depth = 1 if not has_merges else 25
+          depth = 1 if not has_merges else INITIAL_DEPTH
           git_cmd("clone", "--depth", str(depth), url, "-b", ref, repo_path)
           git_cmd("-C", repo_path, "remote", "add", name, url)
           commit = git_lock(name, name, ref, repo_path)
@@ -109,13 +125,14 @@
   def repo_merge(repo, remote, ref, base_ref):
       repo_path = path.join("wax/repos", repo)
       commit = git_lock(repo, remote, ref, repo_path)
-      git_cmd("-C", repo_path, "fetch", "--depth", str(25), remote, ref)
+      git_cmd("-C", repo_path, "fetch", "--depth", str(INITIAL_DEPTH_MERGE), remote, ref)
 
       # Deepen the repository until we have found a common ancestor, meaning we can perform the
       # merge
       while True:
           result = git_cmd(
-              "-C", repo_path, "merge-base", base_ref, remote + "/" + ref, may_fail=True, capture_output=True
+              "-C", repo_path, "merge-base", base_ref, remote + "/" + ref, may_fail=True,
+              capture_output=True
           )
           if result.returncode == 0:
               break
@@ -142,7 +159,7 @@
             repoRef = if repoConfig ? ref then
                 repoConfig.ref
               else
-                config.reposDefaultRef;
+                config.repos.defaultRef;
             repoUrl = if repoConfig ? url then
                 repoConfig.url
               else if repoName == "odoo" then
@@ -168,5 +185,5 @@
             else
               [""]
           )) + "]\n" +
-  "    repo_aggregate(\"${repoName}\", \"${repoUrl}\", \"${repoRef}\", remotes, merges)\n") config.repos) +
+  "    repo_aggregate(\"${repoName}\", \"${repoUrl}\", \"${repoRef}\", remotes, merges)\n") config.repos.spec) +
   "\n\nmain()\n"

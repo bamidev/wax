@@ -44,11 +44,7 @@ Here is an example Nix flake for you Odoo project:
     };
   };
 
-  # Optional:
-  reposDeepenStep = 250;
-  reposDeepenStepMerge = 25;
-
-  repos = {
+  repos.spec = {
     odoo = {
       ref = "16.0";
       url = "https://github.com/odoo/odoo.git";
@@ -83,6 +79,12 @@ Here is an example Nix flake for you Odoo project:
     "psycopg2"
     "debugpy"
   ];
+
+  # Optional:
+  repos.deepenStep = 500;
+  repos.deepenStepMerge = 50;
+  repos.initialDepth = 10;
+  repos.initialDepthMerge = 20;
 }
 ```
 

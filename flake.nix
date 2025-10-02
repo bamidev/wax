@@ -20,7 +20,10 @@
               "git+https://github.com/ddejong-therp/odoo-repl@master"
             ];
 
-            reposDefaultRef = config.odooVersion;
+            repos = {
+              defaultRef = config.odooVersion;
+              spec = {};
+            };
           };
           completeConfig = lib.attrsets.recursiveUpdate defaultConfig config;
 
