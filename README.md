@@ -44,6 +44,10 @@ Here is an example Nix flake for you Odoo project:
     };
   };
 
+  # Optional:
+  reposDeepenStep = 250;
+  reposDeepenStepMerge = 25;
+
   repos = {
     odoo = {
       ref = "16.0";

@@ -6,8 +6,8 @@
 
   locks = {}
 
-  DEEPEN_STEP = 500
-  DEEPEN_STEP_BRANCH = 50
+  DEEPEN_STEP = ${if config ? reposDeepenStep then toString config.reposDeepenStep else "500"}
+  DEEPEN_STEP_MERGE = ${if config ? reposDeepenStepMerge then toString config.reposDeepenStepMerge else "50"}
 
 
   def check_hash(remote, ref, repo_path):
@@ -122,7 +122,7 @@
           elif result.returncode != 1:
               raise Exception("Invalid returncode for merge-base: " + str(result.returncode))
           git_cmd("-C", repo_path, "fetch", "--deepen", str(DEEPEN_STEP))
-          git_cmd("-C", repo_path, "fetch", "--deepen", str(DEEPEN_STEP_BRANCH), remote, ref)
+          git_cmd("-C", repo_path, "fetch", "--deepen", str(DEEPEN_STEP_MERGE), remote, ref)
 
       git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
 
