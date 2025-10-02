@@ -6,8 +6,8 @@
 
   locks = {}
 
-  DEEPEN_STEP = ${if config ? reposDeepenStep then toString config.reposDeepenStep else "500"}
-  DEEPEN_STEP_MERGE = ${if config ? reposDeepenStepMerge then toString config.reposDeepenStepMerge else "50"}
+  DEEPEN_STEP = ${if config ? reposDeepenStep then toString config.reposDeepenStep else "250"}
+  DEEPEN_STEP_MERGE = ${if config ? reposDeepenStepMerge then toString config.reposDeepenStepMerge else "25"}
 
 
   def check_hash(remote, ref, repo_path):
@@ -73,7 +73,7 @@
       commit = None
       repo_path = path.join("wax/repos", name)
       if not path.isdir(repo_path):
-          depth = 1 if not has_merges else 50
+          depth = 1 if not has_merges else 25
           git_cmd("clone", "--depth", str(depth), url, "-b", ref, repo_path)
           git_cmd("-C", repo_path, "remote", "add", name, url)
           commit = git_lock(name, name, ref, repo_path)
@@ -109,7 +109,7 @@
   def repo_merge(repo, remote, ref, base_ref):
       repo_path = path.join("wax/repos", repo)
       commit = git_lock(repo, remote, ref, repo_path)
-      git_cmd("-C", repo_path, "fetch", "--depth", str(20), remote, ref)
+      git_cmd("-C", repo_path, "fetch", "--depth", str(25), remote, ref)
 
       # Deepen the repository until we have found a common ancestor, meaning we can perform the
       # merge
