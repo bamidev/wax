@@ -64,16 +64,17 @@
 
 
   def repo_aggregate(name, url, ref, remotes, merges):
-      repo_initialize(name, url, ref, remotes)
+      repo_initialize(name, url, ref, remotes, len(merges) > 0)
       for remote, merge_ref in merges:
           repo_merge(name, remote, merge_ref, ref)
 
 
-  def repo_initialize(name, url, ref, remotes):
+  def repo_initialize(name, url, ref, remotes, has_merges):
       commit = None
       repo_path = path.join("wax/repos", name)
       if not path.isdir(repo_path):
-          git_cmd("clone", "--depth", "1", url, "-b", ref, repo_path)
+          depth = 1 if not has_merges else 50
+          git_cmd("clone", "--depth", str(depth), url, "-b", ref, repo_path)
           git_cmd("-C", repo_path, "remote", "add", name, url)
           commit = git_lock(name, name, ref, repo_path)
       elif not is_hash(ref):
