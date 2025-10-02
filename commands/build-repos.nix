@@ -11,24 +11,10 @@
 
   locks = {}
 
-  DEEPEN_STEP = ${
-    if config ? repos && config.repos ? deepenStep then toString config.repos.deepenStep else "250"
-  }
-  DEEPEN_STEP_MERGE = ${
-    if config ? repos && config.repos ? deepenStepMerge then
-      toString config.repos.deepenStepMerge
-    else
-      "25"
-  }
-  INITIAL_DEPTH = ${
-    if config ? repos && config.repos ? initialDepth then toString config.repos.initialDepth else "25"
-  }
-  INITIAL_DEPTH_MERGE = ${
-    if config ? repos && config.repos ? initialDepthMerge then
-      toString config.repos.initialDepthMerge
-    else
-      "25"
-  }
+  DEEPEN_STEP = ${toString config.repos.depth.deepen.base}
+  DEEPEN_STEP_MERGE = ${toString config.repos.depth.deepen.merge}
+  INITIAL_DEPTH = ${toString config.repos.depth.initial.base}
+  INITIAL_DEPTH_MERGE = ${toString config.repos.depth.initial.merge}
 
 
   def check_hash(remote, ref, repo_path):

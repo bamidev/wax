@@ -81,10 +81,10 @@ Here is an example Nix flake for you Odoo project:
   ];
 
   # Optional:
-  repos.deepenStep = 500;
-  repos.deepenStepMerge = 50;
-  repos.initialDepth = 10;
-  repos.initialDepthMerge = 20;
+  repos.depth.deepen.base = 500;
+  repos.depth.deepen.merge = 50;
+  repos.depth.initial.base = 10;
+  repos.depth.initial.merge = 20;
 }
 ```
 

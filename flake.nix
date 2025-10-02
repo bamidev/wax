@@ -21,6 +21,16 @@
             ];
 
             repos = {
+              depth = {
+                deepen = {
+                  base = 250;
+                  merge = 25;
+                };
+                initial = {
+                  base = 25;
+                  merge = 25;
+                };
+              };
               defaultRef = config.odooVersion;
               spec = { };
             };
