@@ -106,11 +106,9 @@ The `build` command will set everything up. You can just remove the `wax` folder
 to completely rebuild everyting from scratch again.
 Moreover, the `build` command really just runs the following commands inchronological order:
 
-### build-venv
+#### build-venv
 
-`build-venv` builds the virtual environment. If you need to update a repository to a later commit,
-you can remove the commit hash from the `repos.lock` file (or remove the file altogether), and run
-`build-venv` again.
+`build-venv` builds the virtual environment. 
 Building the virtual environment may fail if you have `pythonRequirements` that are causing
 conflicts with eachother, or in combination with the packages or python version that are provided
 through Wax itself. To fix this, you can try:
@@ -120,21 +118,22 @@ rm -rf requirements.lock wax/venv
 build-venv
 ```
 
-### build-repos
+#### build-repos
 
-`build-repos` builds the git repositories. To rebuild them, you can do:
-```
-rm -rf wax/repos
-build-repos
-```
+`build-repos` builds the git repositories. If you need to update a repository to a later commit,
+you can remove the commit hash from the `repos.lock` file (or remove the file altogether), and run
+`build-repos` again.
+
+If you remove the `wax/repos` folder, and then run `build-repos` for a second time again, it will
+prepare the exact same code as the first time, provided that the `repos.lock` file is the same.
 
 
-### build-addons
+#### build-addons
 
 `build-addons` builds the directory of addon links `wax/addons`. You don't need to delete anything
-to reset it, just run `build-addons` and it will be completely rebuild.
+to reset it, just run `build-addons` and it will be rebuild from scratch.
 
-### build-config
+#### build-config
 
 `build-config` (re)builds the odoo configuration file.
 
