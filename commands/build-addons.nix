@@ -3,7 +3,7 @@ let
   link_specific_addons =
     { repo }:
     lib.strings.concatStrings (
-      lib.lists.forEach config.repos.${repo}.addons (addon: ''
+      lib.lists.forEach config.repos.spec.${repo}.addons (addon: ''
         ln -f -s "$(pwd)/wax/repos/${repo}/${addon}" "wax/addons/${addon}"
       '')
     );
@@ -33,6 +33,6 @@ in
             link_addons "${repoName}"
           ''
       }
-    '') config.repos
+    '') config.repos.spec
   )}
 ''
