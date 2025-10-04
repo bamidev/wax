@@ -21,6 +21,8 @@
               "git+https://github.com/ddejong-therp/odoo-repl@master"
             ];
 
+            odooConfig = {};
+
             repos = {
               depth = {
                 deepen = {
