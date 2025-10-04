@@ -21,13 +21,8 @@ with pkgs;
   #!/usr/bin/env bash
   set -e
   mkdir -p {etc,wax/{addons,log,repos}}
-  touch etc/requirements.txt
-  touch etc/repos.yaml
 
   # Create some necessary files
-  cat > wax/env-variables <<HEREDOC
-  ${envVariables}
-  HEREDOC
   cat > wax/default-requirements.txt <<HEREDOC
   ${defaultRequirements}
   HEREDOC
