@@ -137,6 +137,7 @@ to reset it, just run `build-addons` and it will be rebuild from scratch.
 
 `build-config` (re)builds the odoo configuration file.
 
+
 ### shell
 
 There is also the `shell` command, to run the Odoo shell.
@@ -145,6 +146,19 @@ There is also the `shell` command, to run the Odoo shell.
 
 Runs Odoo. You may not see any output in most cases, because by default, the output is logged to
 `wax/log/odoo.log`.
+
+### setup-dev
+
+Installs some development related python packages into the virtual environment.
+
+### build-dev
+
+The same as:
+```
+build
+setup-dev
+```
+
 
 ## Configuration
 
