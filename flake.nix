@@ -157,8 +157,7 @@
             );
             build-dev = pkgs.writers.writeBashBin "build-dev" (
               import ./commands/build-dev.nix {
-                config = completeConfig;
-                lib = lib;
+                commands = commands;
               }
             );
             build-repos =
@@ -190,6 +189,12 @@
                 odooMajorVersion = odooMajorVersion;
               }
             );
+            setup-dev = pkgs.writers.writeBashBin "setup-dev" (
+              import ./commands/setup-dev.nix {
+                config = completeConfig;
+                lib = lib;
+              }
+            );
             shell = pkgs.writers.writeBashBin "shell" (
               import ./commands/shell.nix {
                 odooMajorVersion = odooMajorVersion;
@@ -208,6 +213,7 @@
               build-repos
               build-venv
               run
+              setup-dev
               shell
             ]
             ++ (with pkgs; [

@@ -1,6 +1,4 @@
-{ lib, config }:
-lib.concatStrings (
-  lib.lists.forEach config.dev.pythonPackages (p: ''
-    wax/venv/bin/pip install ${p}
-  '')
-)
+{ commands, ... }: ''
+  ${commands.build}/bin/build
+  ${commands.setup-dev}/bin/setup-dev
+''
