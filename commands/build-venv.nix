@@ -20,7 +20,7 @@ with pkgs;
 ''
   #!/usr/bin/env bash
   set -e
-  mkdir -p {etc,wax/{addons,log,repos}}
+  mkdir -p wax/{addons,log,repos}
 
   # Create some necessary files
   cat > wax/default-requirements.txt <<HEREDOC
