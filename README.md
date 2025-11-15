@@ -10,6 +10,8 @@ Almost all generated files are put inside in the `wax` directory of your working
 you only need to add one entry to your `.gitignore` file, and so that your work environment stays
 tidy. There are however several lock files generated to keep your environment reproducable.
 
+Moreover, git repositories with merges will be automatically aggregated without the full history, but also without the need to specify a depth parameter.
+
 ## Example flake
 
 Here is an example Nix flake for you Odoo project:
