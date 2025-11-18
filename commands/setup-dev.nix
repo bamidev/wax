@@ -4,5 +4,5 @@ lib.concatStrings (
     wax/venv/bin/pip install ${p}
   '')
 ) + ''
-  wax/venv/bin/pip install {if odooMajorVersion >= 15 then "-e" else ""} wax/repos/odoo
+  wax/venv/bin/pip install ${if odooMajorVersion >= 15 then "-e" else ""} wax/repos/odoo
 ''
