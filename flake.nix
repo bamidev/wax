@@ -193,6 +193,7 @@
               import ./commands/setup-dev.nix {
                 config = completeConfig;
                 lib = lib;
+                odooMajorVersion = odooMajorVersion;
               }
             );
             shell = pkgs.writers.writeBashBin "shell" (
