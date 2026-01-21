@@ -16,6 +16,7 @@
           defaultConfig = {
             dev.pythonPackages = [
               "debugpy"
+              "openupgradelib"
               "pylint-odoo"
               "python-lsp-server[all]"
               "git+https://github.com/ddejong-therp/odoo-repl@master"
