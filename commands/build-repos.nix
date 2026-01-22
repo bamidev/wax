@@ -136,23 +136,27 @@
 
 
   def repo_merge(repo, remote, ref, base_ref):
+      def check_ancestor():
+          result = git_cmd(
+              "-C", repo_path, "merge-base", base_ref, remote + '/' + ref, may_fail=True
+          )
+          return result.returncode
+
       repo_path = path.join("wax/repos", repo)
       commit = git_lock(repo, remote, ref, repo_path)
-      if not have_commit(repo_path, commit):
+      if check_ancestor() != 0:
           git_cmd("-C", repo_path, "fetch", "--depth", str(INITIAL_DEPTH_MERGE), remote, ref)
 
       # Deepen the repository until we have found a common ancestor, meaning we can perform the
       # merge
       ancestor_found = False
       for i in range(20):
-          result = git_cmd(
-              "-C", repo_path, "merge-base", base_ref, commit, may_fail=True
-          )
-          if result.returncode == 0:
+          returncode = check_ancestor()
+          if returncode == 0:
               ancestor_found = True
               break
-          elif result.returncode != 1:
-              raise Exception("Invalid returncode for merge-base: " + str(result.returncode))
+          elif returncode != 1:
+              raise Exception("Invalid returncode for merge-base: " + str(returncode))
           repo_deepen(repo_path, DEEPEN_STEP_MERGE)
           git_cmd("-C", repo_path, "fetch", "--deepen", str(DEEPEN_STEP_MERGE), remote, ref)
 
@@ -162,10 +166,11 @@
           git_cmd("-C", repo_path, "fetch", remote, ref)
 
       # Check if we have the commit we need to merge in, otherwise, pull it in
-      if have_commit(repo_path, commit):
-          git_cmd("-C", repo_path, "merge", "--no-edit", commit)
-      else:
-          git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
+      # FIXME: The merge command is giving merge conflicts while pull is not. Investigate.
+      #if have_commit(repo_path, commit):
+      #    git_cmd("-C", repo_path, "merge", "--no-edit", commit)
+      #else:
+      git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
 
 
   def save_locks():
