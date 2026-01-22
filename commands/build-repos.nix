@@ -100,9 +100,16 @@
           git_cmd("-C", repo_path, "remote", "add", name, url)
 
 
+  def repo_deepen(repo_path, count):
+      # FIXME: I can't really get the output of this command for some reason.
+      # If I would have the output, I could check if we downloaded any commits.
+      # If we didn't download any commits, we can escape the loop, assuming there are no older
+      # commits to gather anymore.
+      git_cmd("-C", repo_path, "fetch", "--deepen", str(count), capture_output=True)
+
+
   def repo_reset_flexible(commit, repo_path):
-      while True:
-          git_cmd("-C", repo_path, "fetch", "--deepen", str(DEEPEN_STEP))
+      for i in range(21):
           exit_code = git_cmd(
               "-C", repo_path, "reset", "--hard", commit, may_fail=True, stderr=subprocess.DEVNULL
           ).returncode
@@ -111,6 +118,15 @@
                   return
               else:
                   raise Exception(f"Git reset failed with exit code {exit_code}")
+          if i != 20:
+              repo_deepen(repo_path, DEEPEN_STEP)
+          else:
+              print(
+                  f"Going to download the complete git history for {repo_path}, because commit "
+                  f"{commit} could not be found by deepening 20 times.\n"
+                  "Is the commit stored in \"repos.lock\" still valid?"
+              )
+              git_cmd("-C", repo_path, "fetch")
 
 
   def repo_merge(repo, remote, ref, base_ref):
@@ -120,18 +136,24 @@
 
       # Deepen the repository until we have found a common ancestor, meaning we can perform the
       # merge
-      while True:
+      ancestor_found = False
+      for i in range(20):
           result = git_cmd(
               "-C", repo_path, "merge-base", base_ref, remote + "/" + ref, may_fail=True,
               capture_output=True
           )
           if result.returncode == 0:
+              ancestor_found = True
               break
           elif result.returncode != 1:
               raise Exception("Invalid returncode for merge-base: " + str(result.returncode))
-          git_cmd("-C", repo_path, "fetch", "--deepen", str(DEEPEN_STEP))
+          repo_deepen(repo_path, DEEPEN_STEP_MERGE)
           git_cmd("-C", repo_path, "fetch", "--deepen", str(DEEPEN_STEP_MERGE), remote, ref)
 
+      # No common ancestor found, so lets download the full history as a last resort.
+      if not ancestor_found:
+          git_cmd("-C", repo_path, "fetch")
+          git_cmd("-C", repo_path, "fetch", remote, ref)
       git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
 
 
