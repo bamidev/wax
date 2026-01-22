@@ -24,6 +24,12 @@
       return result.stdout[:40]
 
 
+  def have_commit(repo_path, commit):
+      return git_cmd(
+          "-C", repo_path, "rev-parse", "--verify", commit, may_fail=True
+      ).returncode == 0
+
+
   def is_hash(string):
       if len(string) != 40:
           return False
@@ -132,15 +138,15 @@
   def repo_merge(repo, remote, ref, base_ref):
       repo_path = path.join("wax/repos", repo)
       commit = git_lock(repo, remote, ref, repo_path)
-      git_cmd("-C", repo_path, "fetch", "--depth", str(INITIAL_DEPTH_MERGE), remote, ref)
+      if not have_commit(repo_path, commit):
+          git_cmd("-C", repo_path, "fetch", "--depth", str(INITIAL_DEPTH_MERGE), remote, ref)
 
       # Deepen the repository until we have found a common ancestor, meaning we can perform the
       # merge
       ancestor_found = False
       for i in range(20):
           result = git_cmd(
-              "-C", repo_path, "merge-base", base_ref, remote + "/" + ref, may_fail=True,
-              capture_output=True
+              "-C", repo_path, "merge-base", base_ref, commit, may_fail=True
           )
           if result.returncode == 0:
               ancestor_found = True
@@ -150,11 +156,16 @@
           repo_deepen(repo_path, DEEPEN_STEP_MERGE)
           git_cmd("-C", repo_path, "fetch", "--deepen", str(DEEPEN_STEP_MERGE), remote, ref)
 
-      # No common ancestor found, so lets download the full history as a last resort.
+      # If no common ancestor were found, lets download the full history as a last resort.
       if not ancestor_found:
           git_cmd("-C", repo_path, "fetch")
           git_cmd("-C", repo_path, "fetch", remote, ref)
-      git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
+
+      # Check if we have the commit we need to merge in, otherwise, pull it in
+      if have_commit(repo_path, commit):
+          git_cmd("-C", repo_path, "merge", "--no-edit", commit)
+      else:
+          git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
 
 
   def save_locks():
