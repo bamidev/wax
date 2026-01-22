@@ -152,6 +152,12 @@ Runs Odoo. You may not see any output in most cases, because by default, the out
 ### setup-dev
 
 Installs some development related python packages into the virtual environment.
+This includes:
+* `odoo-repl`
+* `debugpy`
+* The `pylsp` Python LSP
+* `pylint-odoo`
+* `odoo` and `openupgradelib`, which is made available to `pylsp` when run `wax/venv/bin/pylsp`.
 
 ### build-dev
 
