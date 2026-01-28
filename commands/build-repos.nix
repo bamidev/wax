@@ -77,7 +77,15 @@
 
 
   def remote_url(repo_path, remote):
-      result = git_cmd("-C", repo_path, "remote", "get-url", remote, capture_output=True)
+      result = git_cmd(
+          "-C",
+          repo_path,
+          "remote",
+          "get-url",
+          remote,
+          may_fail=True,
+          capture_output=True
+      )
       if result.returncode == 2:
           return None
       return result.stdout
