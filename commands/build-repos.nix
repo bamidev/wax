@@ -76,6 +76,13 @@
           locks = json.load(f)
 
 
+  def remote_url(repo_path, remote):
+      result = git_cmd("-C", repo_path, "remote", "get-url", remote, capture_output=True)
+      if result.returncode == 2:
+          return None
+      return result.stdout
+
+
   def repo_aggregate(name, url, ref, remotes, merges):
       repo_initialize(name, url, ref, remotes, len(merges) > 0)
       for remote, merge_ref in merges:
@@ -86,7 +93,7 @@
       commit = None
       repo_path = path.join("wax/repos", name)
       if not path.isdir(repo_path):
-          depth = 1 if not has_merges else INITIAL_DEPTH
+          depth = not has_merges and 1 or INITIAL_DEPTH
           git_cmd("clone", "--depth", str(depth), url, "-b", ref, repo_path)
           git_cmd("-C", repo_path, "remote", "add", name, url)
           commit = git_lock(name, name, ref, repo_path)
@@ -100,10 +107,13 @@
 
       # Add the remotes, and make sure the URL's are updated
       for name, url in remotes.items():
-          git_cmd(
-              "-C", repo_path, "remote", "remove", name, may_fail=True, stderr=subprocess.DEVNULL
-          )
-          git_cmd("-C", repo_path, "remote", "add", name, url)
+          existing_url = remote_url(repo_path, name).strip()
+          if existing_url != url:
+              git_cmd(
+                  "-C", repo_path, "remote", "remove", name, may_fail=True,
+                  stderr=subprocess.DEVNULL
+              )
+              git_cmd("-C", repo_path, "remote", "add", name, url)
 
 
   def repo_deepen(repo_path, count):
@@ -111,7 +121,7 @@
       # If I would have the output, I could check if we downloaded any commits.
       # If we didn't download any commits, we can escape the loop, assuming there are no older
       # commits to gather anymore.
-      git_cmd("-C", repo_path, "fetch", "--deepen", str(count), capture_output=True)
+      git_cmd("-C", repo_path, "fetch", "--deepen", str(count), capture_output=False)
 
 
   def repo_reset_flexible(commit, repo_path):
@@ -136,7 +146,7 @@
 
 
   def repo_merge(repo, remote, ref, base_ref):
-      def check_ancestor():
+      def check_ancestor(repo_path):
           result = git_cmd(
               "-C", repo_path, "merge-base", base_ref, remote + '/' + ref, may_fail=True
           )
@@ -144,14 +154,17 @@
 
       repo_path = path.join("wax/repos", repo)
       commit = git_lock(repo, remote, ref, repo_path)
-      if check_ancestor() != 0:
+      returncode = check_ancestor(repo_path)
+      if returncode == 128:
           git_cmd("-C", repo_path, "fetch", "--depth", str(INITIAL_DEPTH_MERGE), remote, ref)
+      elif returncode != 0:
+          raise Exception("Invalid returncode for merge-base: " + str(returncode))
 
       # Deepen the repository until we have found a common ancestor, meaning we can perform the
       # merge
       ancestor_found = False
       for i in range(20):
-          returncode = check_ancestor()
+          returncode = check_ancestor(repo_path)
           if returncode == 0:
               ancestor_found = True
               break
@@ -167,10 +180,10 @@
 
       # Check if we have the commit we need to merge in, otherwise, pull it in
       # FIXME: The merge command is giving merge conflicts while pull is not. Investigate.
-      #if have_commit(repo_path, commit):
-      #    git_cmd("-C", repo_path, "merge", "--no-edit", commit)
-      #else:
-      git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
+      #new_branch_name = f"wax_merge_{remote}_{ref}"
+      #git_cmd("-C", repo_path, "branch", "-f", new_branch_name, commit)
+      #return new_branch_name
+      git_cmd("-C", repo_path, "pull", "--no-edit", remote, commit)
 
 
   def save_locks():
