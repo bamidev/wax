@@ -158,7 +158,8 @@
   def repo_merge(repo, remote, ref, base_ref):
       def check_ancestor(repo_path):
           result = git_cmd(
-              "-C", repo_path, "merge-base", base_ref, remote + '/' + ref, may_fail=True
+              "-C", repo_path, "merge-base", base_ref, remote + '/' + ref, may_fail=True,
+              stderr=subprocess.DEVNULL
           )
           return result.returncode
 
@@ -193,7 +194,7 @@
       #new_branch_name = f"wax_merge_{remote}_{ref}"
       #git_cmd("-C", repo_path, "branch", "-f", new_branch_name, commit)
       #return new_branch_name
-      git_cmd("-C", repo_path, "pull", "--no-edit", remote, commit)
+      git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
 
 
   def save_locks():
