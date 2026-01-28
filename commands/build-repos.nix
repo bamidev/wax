@@ -191,10 +191,11 @@
 
       # Check if we have the commit we need to merge in, otherwise, pull it in
       # FIXME: The merge command is giving merge conflicts while pull is not. Investigate.
-      #new_branch_name = f"wax_merge_{remote}_{ref}"
-      #git_cmd("-C", repo_path, "branch", "-f", new_branch_name, commit)
+      new_branch_name = f"wax_{remote}_{ref}"
+      git_cmd("-C", repo_path, "branch", "-f", new_branch_name, commit)
       #return new_branch_name
-      git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
+      #git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
+      git_cmd("-C", repo_path, "merge", "--no-edit", "--ff", new_branch_name)
 
 
   def save_locks():
