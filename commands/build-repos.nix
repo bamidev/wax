@@ -159,7 +159,7 @@
       def check_ancestor(repo_path):
           result = git_cmd(
               "-C", repo_path, "merge-base", base_ref, remote + '/' + ref, may_fail=True,
-              stderr=subprocess.DEVNULL
+              stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL
           )
           return result.returncode
 
