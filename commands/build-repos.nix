@@ -115,7 +115,9 @@
 
       # Add the remotes, and make sure the URL's are updated
       for name, url in remotes.items():
-          existing_url = remote_url(repo_path, name).strip()
+          existing_url = remote_url(repo_path, name)
+          if existing_url:
+              existing_url = existing_url.strip()
           if existing_url != url:
               git_cmd(
                   "-C", repo_path, "remote", "remove", name, may_fail=True,
