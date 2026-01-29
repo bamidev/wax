@@ -24,6 +24,18 @@
       return result.stdout[:40]
 
 
+  def create_branch(repo_path, remote, branch, base_ref, commit):
+      git_cmd("-C", repo_path, "branch", branch, commit, may_fail=True)
+      try:
+          git_cmd("-C", repo_path, "checkout", branch)
+          result = git_cmd("-C", repo_path, "reset", "--hard", commit, may_fail=True)
+          # In case the reset failed, we may not have the commit (anymore).
+          if result.returncode == 128:
+              git_cmd("-C", repo_path, "pull", "--depth", "1", remote, commit)
+      finally:
+          git_cmd("-C", repo_path, "checkout", base_ref)
+
+
   def have_commit(repo_path, commit):
       return git_cmd(
           "-C", repo_path, "rev-parse", "--verify", commit, may_fail=True
@@ -156,26 +168,30 @@
 
 
   def repo_merge(repo, remote, ref, base_ref):
-      def check_ancestor(repo_path):
+      def check_ancestor(repo_path, commit):
           result = git_cmd(
-              "-C", repo_path, "merge-base", base_ref, remote + '/' + ref, may_fail=True,
+              "-C", repo_path, "merge-base", base_ref, commit, may_fail=True,
               stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL
           )
           return result.returncode
 
       repo_path = path.join("wax/repos", repo)
       commit = git_lock(repo, remote, ref, repo_path)
-      returncode = check_ancestor(repo_path)
+
+      # Set up a branch for the merge we are going to make
+      returncode = check_ancestor(repo_path, commit)
       if returncode == 128:
           git_cmd("-C", repo_path, "fetch", "--depth", str(INITIAL_DEPTH_MERGE), remote, ref)
       elif returncode != 0:
           raise Exception("Invalid returncode for merge-base: " + str(returncode))
+      new_branch_name = f"wax_{remote}_{ref}"
+      create_branch(repo_path, remote, new_branch_name, base_ref, commit)
 
-      # Deepen the repository until we have found a common ancestor, meaning we can perform the
-      # merge
+      # Deepen the repository until we have found a common ancestor, meaning we can finally perform
+      # the merge
       ancestor_found = False
       for i in range(20):
-          returncode = check_ancestor(repo_path)
+          returncode = check_ancestor(repo_path, commit)
           if returncode == 0:
               ancestor_found = True
               break
@@ -186,15 +202,10 @@
 
       # If no common ancestor were found, lets download the full history as a last resort.
       if not ancestor_found:
-          git_cmd("-C", repo_path, "fetch")
+          git_cmd("-C", repo_path, "fetch", remote, base_ref)
           git_cmd("-C", repo_path, "fetch", remote, ref)
 
-      # Check if we have the commit we need to merge in, otherwise, pull it in
-      # FIXME: The merge command is giving merge conflicts while pull is not. Investigate.
-      new_branch_name = f"wax_{remote}_{ref}"
-      git_cmd("-C", repo_path, "branch", "-f", new_branch_name, commit)
-      #return new_branch_name
-      #git_cmd("-C", repo_path, "pull", "--no-edit", "--no-rebase", remote, commit)
+      # Merge
       git_cmd("-C", repo_path, "merge", "--no-edit", "--ff", new_branch_name)
 
 
