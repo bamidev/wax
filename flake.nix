@@ -202,6 +202,11 @@
                 odooMajorVersion = odooMajorVersion;
               }
             );
+            upgrade = pkgs.writers.writeBashBin "upgrade" (
+              import ./commands/upgrade.nix {
+                odooMajorVersion = odooMajorVersion;
+              }
+            );
           };
         in
         pkgs.mkShell {
@@ -217,6 +222,7 @@
               run
               setup-dev
               shell
+              upgrade
             ]
             ++ (with pkgs; [
               cyrus_sasl
