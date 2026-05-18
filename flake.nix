@@ -19,6 +19,8 @@
               "openupgradelib"
               "pylint-odoo"
               "python-lsp-server[all]"
+              "python-lsp-black"
+              "python-lsp-isort"
               "git+https://github.com/ddejong-therp/odoo-repl@master"
             ];
 
