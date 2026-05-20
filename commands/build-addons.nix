@@ -25,6 +25,7 @@ in
         if repoName == "odoo" then
           ''
             link_addons odoo/addons
+            ln -f -s "$(pwd)/wax/repos/odoo/odoo/addons/base" wax/addons/base
           ''
         else if (lib.attrsets.hasAttrByPath [ "addons" ] repoConfig) then
           (link_specific_addons { repo = repoName; })
