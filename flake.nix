@@ -189,6 +189,7 @@
             );
             run = pkgs.writers.writeBashBin "run" (
               import ./commands/run.nix {
+                pkgs = pkgs;
                 odooMajorVersion = odooMajorVersion;
               }
             );
