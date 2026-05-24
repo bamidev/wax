@@ -147,7 +147,7 @@
 
 
   def repo_reset_flexible(commit, repo_path):
-      for i in range(21):
+      for i in range(11):
           exit_code = git_cmd(
               "-C", repo_path, "reset", "--hard", commit, may_fail=True, stderr=subprocess.DEVNULL
           ).returncode
@@ -156,7 +156,7 @@
                   return
               else:
                   raise Exception(f"Git reset failed with exit code {exit_code}")
-          if i != 20:
+          if i != 10:
               repo_deepen(repo_path, DEEPEN_STEP)
           else:
               print(
