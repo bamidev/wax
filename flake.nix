@@ -234,6 +234,7 @@
               upgrade
             ]
             ++ (with pkgs; [
+              basedpyright
               cyrus_sasl
               stdenv.cc.cc.lib
               git-aggregator
