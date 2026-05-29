@@ -13,38 +13,6 @@
         let
           lib = nixpkgs.lib;
 
-          defaultConfig = {
-            dev.pythonPackages = [
-              "debugpy"
-              "openupgradelib"
-              "pyls-memestra"
-              "pylsp-mypy"
-              "pylsp-rope"
-              "pylint-odoo"
-              "python-lsp-server[all]"
-              "python-lsp-black"
-              "python-lsp-isort"
-              "git+https://github.com/ddejong-therp/odoo-repl@master"
-            ];
-
-            odooConfig = {};
-
-            repos = {
-              depth = {
-                deepen = {
-                  base = 250;
-                  merge = 25;
-                };
-                initial = {
-                  base = 25;
-                  merge = 25;
-                };
-              };
-              defaultRef = config.odooVersion;
-              spec = { };
-            };
-          };
-          completeConfig = lib.attrsets.recursiveUpdate defaultConfig config;
 
           odooMajorVersion = lib.strings.toInt (lib.versions.major config.odooVersion);
 
@@ -142,6 +110,41 @@
               else
                 "25.1.1";
           };
+
+          defaultConfig = {
+            dev.pythonPackages = [
+              "debugpy"
+              "openupgradelib"
+              "pyls-memestra"
+              "pylsp-mypy"
+              "pylint-odoo"
+              "python-lsp-server[all]"
+              "python-lsp-black"
+              "python-lsp-isort"
+              "git+https://github.com/ddejong-therp/odoo-repl@master"
+            # rope only supports python 3.6 and higher
+            ] ++ (lib.optionals (python.majorVersion == 3 && python.minorVersion >= 6) [
+              "pylsp-rope"
+            ]);
+
+            odooConfig = {};
+
+            repos = {
+              depth = {
+                deepen = {
+                  base = 250;
+                  merge = 25;
+                };
+                initial = {
+                  base = 25;
+                  merge = 25;
+                };
+              };
+              defaultRef = config.odooVersion;
+              spec = {};
+            };
+          };
+          completeConfig = lib.attrsets.recursiveUpdate defaultConfig config;
 
           commands = {
             build = pkgs.writers.writeBashBin "build" (
