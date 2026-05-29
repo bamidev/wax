@@ -123,7 +123,7 @@
               "python-lsp-isort"
               "git+https://github.com/ddejong-therp/odoo-repl@master"
             # rope only supports python 3.6 and higher
-            ] ++ (lib.optionals (python.majorVersion == 3 && python.minorVersion >= 6) [
+            ] ++ (lib.optionals (python.majorVersion == 3 && python.minorVersion >= 7) [
               "pylsp-rope"
             ]);
 
