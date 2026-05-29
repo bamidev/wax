@@ -17,6 +17,9 @@
             dev.pythonPackages = [
               "debugpy"
               "openupgradelib"
+              "pyls-memestra"
+              "pylsp-mypy"
+              "pylsp-rope"
               "pylint-odoo"
               "python-lsp-server[all]"
               "python-lsp-black"
