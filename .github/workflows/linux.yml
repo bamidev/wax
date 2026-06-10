@@ -1,0 +1,23 @@
+name: Linux
+
+on:
+  push:
+    branches: [ "master", "dev" ]
+  pull_request:
+    branches: [ "master", "dev" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout CI sample
+      uses: actions/checkout@v6
+      with:
+        ref: 'ci-sample'
+    - name: Enter shell
+      run: nix develop .
+    - name: Build Wax
+      run: nix develop . --command "build-dev"
+    - name: Run Odoo
+      run: nix develop . --command "run --stop-after-init"
