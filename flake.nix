@@ -1,5 +1,5 @@
 {
-  description = "A flake to manage odoo with git-aggregator and pip";
+  description = "A flake to manage Odoo setups.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";

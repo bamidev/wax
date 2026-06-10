@@ -8,7 +8,7 @@
   # Install virtual environment if needed
   ${commands.build-venv}/bin/build-venv
 
-  # Update repos with git-aggregator
+  # Aggregate repos
   echo Aggregating repositories...
   ${commands.build-repos}/bin/build-repos
 
