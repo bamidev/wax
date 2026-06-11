@@ -21,6 +21,10 @@ jobs:
         nix_path: nixpkgs=channel:nixos-26.05
         extra_nix_config: |
           experimental-features = nix-command flakes
+    - name: Set up git
+      run: |
+        git config --global user.name "Wax CI Job"
+        git config --global user.email "wax@wax.xxx"
     - name: Enter shell
       run: nix develop .
     - name: Build Wax
