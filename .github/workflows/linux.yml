@@ -16,12 +16,16 @@ jobs:
       with:
         ref: 'ci-sample'
     - name: Install Nix
-      run: sudo apt install --no-install-recommends -y nix-bin
+      uses: cachix/install-nix-action@v27
+      with:
+        nix_path: nixpkgs=channel:nixos-26.05
+        extra_nix_config: |
+          experimental-features = nix-command flakes
     - name: Enter shell
-      run: nix develop --extra-experimental-features 'nix-command flakes' .
+      run: nix develop .
     - name: Build Wax
-      run: nix develop --extra-experimental-features 'nix-command flakes' . --command "build-dev"
+      run: nix develop . --command "build-dev"
     - name: Run Odoo
       run: |
         createdb odoo
-        nix develop --extra-experimental-features 'nix-command flakes' . --command "run --stop-after-init -i base"
+        nix develop . --command "run --stop-after-init -i base"
