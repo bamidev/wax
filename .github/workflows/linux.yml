@@ -16,7 +16,11 @@ jobs:
       with:
         ref: 'ci-sample'
     - name: Install PostgresQL
-      run: sudo apt install postgresql
+      run: |
+        sudo apt install postgresql
+        sudo service postgresql start
+        sudo -u postgres createuser --superuser runner
+        createdb odoo
     - name: Install Nix
       uses: cachix/install-nix-action@v27
       with:
@@ -32,6 +36,4 @@ jobs:
     - name: Build Wax
       run: nix develop . --command "build-dev"
     - name: Run Odoo
-      run: |
-        createdb odoo
-        nix develop . --command "run --stop-after-init -i base"
+      run: nix develop . --command "run --stop-after-init -i base"
