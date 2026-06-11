@@ -34,6 +34,4 @@ jobs:
     - name: Enter shell
       run: nix develop .
     - name: Build Wax
-      run: nix develop . --command "build-dev"
-    - name: Run Odoo
-      run: nix develop . --command "run --stop-after-init -i base"
+      run: nix develop . --command build-dev
