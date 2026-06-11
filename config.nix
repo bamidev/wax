@@ -18,13 +18,10 @@
       # When the ref attribute is not set, will default to what is in odooVersion
       # When the url attribute is not set, will default to https://github.com/OCA/partner-contact.git
       remotes = {
-        therp = "https://github.com/Therp/partner-contact.git";
+        therp = "https://github.com/OCA/partner-contact.git";
       };
-      # When multiple branches from the same repo need to be merged in, we can't use attrsets, so
-      # use lists instead:
+      # TODO: Add some merges to test
       merges = [
-        ["therp" "16.0-add-partner_multi_relation_address"]
-        ["therp" "16.0-add-partner_multi_relation_function"]
       ];
     };
 
