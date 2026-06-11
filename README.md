@@ -56,7 +56,7 @@ Here is an example Nix flake for you Odoo project:
       merges = {    # All commits that will be merged into the repo
         bamidev = "16.0-fix-a-thing";
       };
-    }
+    };
 
     partner-contact = {
       # When the ref attribute is not set, will default to what is in odooVersion
