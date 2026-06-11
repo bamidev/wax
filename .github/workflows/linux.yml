@@ -15,9 +15,13 @@ jobs:
       uses: actions/checkout@v6
       with:
         ref: 'ci-sample'
+    - name: Install Nix
+      run: sudo apt install --no-install-recommends -y nix-bin
     - name: Enter shell
-      run: nix develop .
+      run: nix develop --extra-experimental-features 'nix-command flakes' .
     - name: Build Wax
-      run: nix develop . --command "build-dev"
+      run: nix develop --extra-experimental-features 'nix-command flakes' . --command "build-dev"
     - name: Run Odoo
-      run: nix develop . --command "run --stop-after-init"
+      run: |
+        createdb odoo
+        nix develop --extra-experimental-features 'nix-command flakes' . --command "run --stop-after-init -i base"
