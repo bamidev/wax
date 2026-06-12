@@ -11,7 +11,7 @@ let
     pythonVersion = python.version;
   };
   envVariables = ''
-    DATABASE_NAME=${config.databaseName}
+    DATABASE_NAME=${config.database.name}
     ODOO_VERSION=${config.odooVersion}
     DEFAULT_MERGE_DEPTH=100
   '';

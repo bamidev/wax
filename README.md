@@ -38,7 +38,7 @@ Here is an example Nix flake for you Odoo project:
 ```
 {
   odooVersion = "16.0";
-  databaseName = "my-database";
+  database.name = "my-database";
 
   odooConfig = {
     options = {
@@ -139,6 +139,13 @@ to reset it, just run `build-addons` and it will be rebuild from scratch.
 
 `build-config` (re)builds the odoo configuration file.
 
+### db-container-shell
+
+When containerization is enabled, open a shell into the docker container that runs Postgres.
+
+### db-shell
+
+When containerization is enabled, open a psql shell into the containerized Postgres instance.
 
 ### shell
 
@@ -166,6 +173,17 @@ The same as:
 build
 setup-dev
 ```
+
+## Containerized Postgres
+
+When you set `database.allow_containerization` to `true` in your `config.nix`, and you have Docker installed on your system, you can run a Postgres database in a container for each Wax build.
+
+For this to work, you need to have the environment variable `WAX_CONTAINERIZED_DB=1` set in your environment.
+This is dne so that the same config does not create & spawn a docker container on production machines.
+
+While in the dev shell your Wax flake, you can use the `db-shell` and `db-container-shell` commands to get to Postgres.
+Moreover, if you are just switching to containers, and you have the config parameter and environment variable set, you might want to re-enter the flake dev shell again and run `build-config`.
+When using containers for Postgres, it needs to be accessed over TCP rather than Unix domain sockets, so the Odoo config file needs to be adjusted accordingly.
 
 
 ## Configuration

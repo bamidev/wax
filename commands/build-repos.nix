@@ -161,7 +161,7 @@
           else:
               print(
                   f"Going to download the complete git history for {repo_path}, because commit "
-                  f"{commit} could not be found by deepening 20 times.\n"
+                  f"{commit} could not be found by deepening 10 times.\n"
                   "Is the commit stored in \"repos.lock\" still valid?"
               )
               git_cmd("-C", repo_path, "fetch")
