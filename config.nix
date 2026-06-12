@@ -1,6 +1,6 @@
 {
   odooVersion = "16.0";
-  databaseName = "odoo";
+  database.name = "odoo";
 
   odooConfig = {
     options = {
