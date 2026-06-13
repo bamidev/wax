@@ -323,13 +323,14 @@
               libxslt
               openldap
               pkg-config
-              postgresql_17.dev
               python.package
               wget
               wkhtmltopdf
               yq
               zlib
-            ]);
+            ]) ++ [
+              completeConfig.database.package.dev
+            ];
 
           shellHook = with pkgs; ''
             alias python="${python.package}/bin/python${lib.versions.majorMinor python.version}"
