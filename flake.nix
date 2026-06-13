@@ -17,7 +17,7 @@
 
           pkgs = nixpkgs.legacyPackages.${system};
 
-          postgresContainerImage = lib.optionalAttrs completeConfig.database.allow_containerization pkgs.dockerTools.buildImage {
+          postgresContainerImage = if completeConfig.database.allow_containerization then pkgs.dockerTools.buildImage {
             name = "wax-postgres-image";
 
             contents = with pkgs; [
@@ -74,7 +74,7 @@
                 ''
               ];
             };
-          };
+          } else pkgs.bash;
 
           python = rec {
             version =
