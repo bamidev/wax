@@ -264,7 +264,7 @@
               }
             );
             db-container-shell = pkgs.writers.writeBashBin "db-container-shell" (
-              import ./commands/db-container-shell.nix { config = completeConfig; }
+              builtins.readFile ./commands/db-container-shell.sh
             );
             db-shell = pkgs.writers.writeBashBin "db-shell" (
               import ./commands/db-shell.nix { config = completeConfig; }
