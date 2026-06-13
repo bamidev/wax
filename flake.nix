@@ -346,12 +346,11 @@
             fi
 
             # Create and start a docker container for the database, if the feature is enabled
-            if [ "$WAX_CONTAINERIZED_DB" == "1" ]; then
+            if [ "$WAX_CONTAINERIZED_DB" == "1" ] && [ ${toString completeConfig.database.allow_containerization} == 1 ]; then
               IMAGE_NAME=$(docker load -i ${postgresContainerImage} | awk '/Loaded image:/ {print $3}')
               IMAGE_HASH=$(basename "${postgresContainerImage}")
               export CONTAINER_ID=$(docker container ls -a -q -f "name=^wax-''${IMAGE_HASH}$")
               if [ -z "$CONTAINER_ID" ]; then
-                mkdir -p /tmp/postgres-sockets
                 export CONTAINER_ID=$(docker container create -p ${toString completeConfig.database.port}:5432 --name "wax-$IMAGE_HASH" "$IMAGE_NAME")
               fi
 
