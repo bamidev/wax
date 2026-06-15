@@ -65,8 +65,12 @@ with pkgs;
 
   if [ ! -e wax/venv ]; then
     mkdir -p wax/tmp
-    wget https://bootstrap-pypa-io.ingress.us-east-2.psfhosted.computer/virtualenv/${lib.versions.majorMinor python.version}/virtualenv.pyz -O wax/tmp/virtualenv.pyz
-    $PYTHON_FULL wax/tmp/virtualenv.pyz wax/venv
+    if [ ${lib.versions.major python.version} == 2 ]; then
+      wget https://bootstrap-pypa-io.ingress.us-east-2.psfhosted.computer/virtualenv/${lib.versions.majorMinor python.version}/virtualenv.pyz -O wax/tmp/virtualenv.pyz
+      $PYTHON_FULL wax/tmp/virtualenv.pyz wax/venv
+    else
+      $PYTHON_FULL -m venv wax/venv
+    fi
 
     # Fake the libldap_r binary to be available
     # Older versions of python-ldap require it instead of the standard version, but nix doesn't have that binary
