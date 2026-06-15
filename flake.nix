@@ -3,7 +3,7 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    wax.url = "github:bamidev/wax";
+    wax.url = "github:bamidev/wax/dev";
   };
 
   outputs = { self, flake-utils, wax }:
