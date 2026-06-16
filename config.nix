@@ -10,7 +10,6 @@
 
   repos.spec = {
     odoo = {
-      ref = "16.0";
       url = "https://github.com/odoo/odoo.git";
     };
 
