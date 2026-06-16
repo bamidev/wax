@@ -85,7 +85,7 @@
               else if odooMajorVersion < 15 then
                 "3.6.15"
               else if odooMajorVersion < 17 then
-                "3.8.20"
+                "3.7.17"
               else
                 "3.10.15";
             majorVersion = lib.strings.toInt (lib.versions.major version);
@@ -103,12 +103,12 @@
                     "sha256-Dw+oaFwdwfHaywtOd3l5a5Cu+Z3B+klnpxudp7V9Sig="
                   else if finalAttrs.version == "3.6.15" then
                     "sha256-bijXzdbdUT3RkOSbyjly4g/PRVCQzPLvPxoidhQTXZE="
-                  else if finalAttrs.version == "3.8.20" then
-                    "sha256-b7iacSQgHGESXAq0z39olN8zmkDAKDO/0oq012kfr7Q="
+                  else if finalAttrs.version == "3.7.17" then
+                    "sha256-eREFHtBCL9VLj1n/wDD3zyrjDg9hvaGRgAuwQNzk+dI="
                   else if finalAttrs.version == "3.10.15" then
                     "sha256-qrCVCBdzUXJgGHmHLZN8HkkopXxAmuAjaew9kdzOvnk="
                   else
-                    "unsupported python version";
+                    lib.fakeHash;
               };
               buildInputs = with pkgs; [
                 bzip2
@@ -163,8 +163,8 @@
                 "20.3.4"
               else if minorVersion == 6 then
                 "21.3.1"
-              else if minorVersion == 8 then
-                "25.0.1"
+              else if minorVersion == 7 then
+                "24.0"
               else
                 "25.1.1";
           };
