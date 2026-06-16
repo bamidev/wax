@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -ex
 rm -rf wax
 nix develop . --command build-dev
 dropdb odoo
