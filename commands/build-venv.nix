@@ -82,6 +82,7 @@ with pkgs;
   fi
 
   $VENV_PYTHON -m pip install pip==${python.pipVersion}
+  $VENV_PYTHON -m pip install setuptools==${python.setuptoolsVersion}
 
   if [ -f requirements.lock ]; then
     $VENV_PYTHON -m pip install -r requirements.lock

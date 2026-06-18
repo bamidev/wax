@@ -170,7 +170,16 @@
               else if minorVersion == 7 then
                 "24.0"
               else
-                "25.1.1";
+                # You can update this to the latest release of pip:
+                "26.1.2";
+            setuptoolsVersion =
+              if majorVersion == 3 && minorVersion <= 10 then
+                # Since setuptools v82, the pkg_resources module has been removed, which causes build
+                # issues with package cbor2 v5.4.2
+                "81.0.0"
+              else
+                # You can update this to the latest release of setuptools:
+                "82.0.1";
           };
 
           defaultConfig = {
