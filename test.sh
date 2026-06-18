@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -ex
-rm -rf wax
+rm -rf wax ./*.lock
 nix develop . --command build-dev
 dropdb odoo
 createdb odoo
