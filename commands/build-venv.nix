@@ -83,6 +83,7 @@ with pkgs;
 
   $VENV_PYTHON -m pip install pip==${python.pipVersion}
   $VENV_PYTHON -m pip install setuptools==${python.setuptoolsVersion}
+  $VENV_PYTHON -m pip install setuptools-scm
 
   if [ -f requirements.lock ]; then
     $VENV_PYTHON -m pip install -r requirements.lock --no-build-isolation
