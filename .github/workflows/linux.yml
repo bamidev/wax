@@ -32,62 +32,62 @@ jobs:
         git config --global user.name "Wax CI Job"
         git config --global user.email "wax@wax.xxx"
 
-    - name: Test 8.0
+    - name: Test 19.0
       run: |
-        sed -i 's/16.0/8.0/' config.nix
-        ./test.sh
-
-    - name: Test 9.0
-      run: |
-        sed -i 's/8.0/9.0/' config.nix
-        ./test.sh
-
-    - name: Test 10.0
-      run: |
-        sed -i 's/9.0/10.0/' config.nix
-        ./test.sh
-
-    - name: Test 11.0
-      run: |
-        sed -i 's/10.0/11.0/' config.nix
-        ./test.sh
-
-    - name: Test 12.0
-      run: |
-        sed -i 's/11.0/12.0/' config.nix
-        ./test.sh
-
-    - name: Test 13.0
-      run: |
-        sed -i 's/12.0/13.0/' config.nix
-        ./test.sh
-
-    - name: Test 14.0
-      run: |
-        sed -i 's/13.0/14.0/' config.nix
-        ./test.sh
-
-    - name: Test 15.0
-      run: |
-        sed -i 's/14.0/15.0/' config.nix
-        ./test.sh
-
-    - name: Test 16.0
-      run: |
-        sed -i 's/15.0/16.0/' config.nix
-        ./test.sh
-
-    - name: Test 17.0
-      run: |
-        sed -i 's/16.0/17.0/' config.nix
+        sed -i 's/16.0/19.0/' config.nix
         ./test.sh
 
     - name: Test 18.0
       run: |
-        sed -i 's/17.0/18.0/' config.nix
+        sed -i 's/19.0/18.0/' config.nix
         ./test.sh
 
-    - name: Test 19.0
+    - name: Test 17.0
       run: |
-        sed -i 's/18.0/19.0/' config.nix
+        sed -i 's/18.0/17.0/' config.nix
+        ./test.sh
+
+    - name: Test 16.0
+      run: |
+        sed -i 's/17.0/16.0/' config.nix
+        ./test.sh
+
+    - name: Test 15.0
+      run: |
+        sed -i 's/16.0/15.0/' config.nix
+        ./test.sh
+
+    - name: Test 14.0
+      run: |
+        sed -i 's/15.0/14.0/' config.nix
+        ./test.sh
+
+    - name: Test 13.0
+      run: |
+        sed -i 's/14.0/13.0/' config.nix
+        ./test.sh
+
+    - name: Test 12.0
+      run: |
+        sed -i 's/13.0/12.0/' config.nix
+        ./test.sh
+
+    - name: Test 11.0
+      run: |
+        sed -i 's/12.0/11.0/' config.nix
+        ./test.sh
+
+    - name: Test 10.0
+      run: |
+        sed -i 's/11.0/10.0/' config.nix
+        ./test.sh
+
+    - name: Test 9.0
+      run: |
+        sed -i 's/10.0/9.0/' config.nix
+        ./test.sh
+
+    - name: Test 8.0
+      run: |
+        sed -i 's/9.0/8.0/' config.nix
         ./test.sh

@@ -1,8 +1,12 @@
 { pkgs, odooMajorVersion, ... }:
 ''
-  if [ ${toString odooMajorVersion} -lt 10 ]; then
-    ${pkgs.expect}/bin/unbuffer wax/venv/bin/python wax/repos/odoo/odoo.py -c wax/odoo.cfg ''$@ 2>&1 | tee -a wax/log/odoo.log
+  CMD_PREFIX="${pkgs.expect}/bin/unbuffer wax/venv/bin/python wax/repos/odoo/"
+  CMD_POSTFIX="-c wax/odoo.cfg ''$@ 2>&1 | tee -a wax/log/odoo.log"
+  if [ ${toString odooMajorVersion} -lt 8 ]; then
+    $CMD_PREFIX/openerp-server $CMD_POSTFIX
+  else if [ ${toString odooMajorVersion} -lt 10 ]; then
+    $CMD_PREFIX/odoo.py $CMD_POSTFIX
   else
-    ${pkgs.expect}/bin/unbuffer wax/venv/bin/python wax/repos/odoo/odoo-bin -c wax/odoo.cfg ''$@ 2>&1 | tee -a wax/log/odoo.log
+    $CMD_PREFIX/odoo-bin $CMD_POSTFIX 
   fi
 ''
