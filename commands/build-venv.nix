@@ -85,13 +85,13 @@ with pkgs;
   $VENV_PYTHON -m pip install setuptools==${python.setuptoolsVersion}
 
   if [ -f requirements.lock ]; then
-    $VENV_PYTHON -m pip install -r requirements.lock
+    $VENV_PYTHON -m pip install -r requirements.lock --no-build-isolation
   fi
 
   # Install the python packages into the virtual environment if no lock file is present yet
   if [ ! -f requirements.lock ]; then
-    $VENV_PYTHON -m pip install -r wax/default-requirements.txt
-    $VENV_PYTHON -m pip install -r wax/requirements.txt
+    $VENV_PYTHON -m pip install -r wax/default-requirements.txt --no-build-isolation
+    $VENV_PYTHON -m pip install -r wax/requirements.txt --no-build-isolation
     $VENV_PYTHON -m pip freeze > requirements.lock
     cp wax/requirements.txt wax/used-requirements.txt
   else
