@@ -81,18 +81,17 @@ with pkgs;
     . wax/venv/bin/activate
   fi
 
-  $VENV_PYTHON -m pip install pip==${python.pipVersion}
-  $VENV_PYTHON -m pip install setuptools==${python.setuptoolsVersion}
-  $VENV_PYTHON -m pip install setuptools-scm
+  $VENV_PYTHON -m pip install pip==${python.pipVersion} setuptools==${python.setuptoolsVersion} setuptools-scm wheel
+  PIP_INSTALL_ARGS="--no-build-isolation"
 
   if [ -f requirements.lock ]; then
-    $VENV_PYTHON -m pip install -r requirements.lock --no-build-isolation
+    $VENV_PYTHON -m pip install -r requirements.lock $PIP_INSTALL_ARGS
   fi
 
   # Install the python packages into the virtual environment if no lock file is present yet
   if [ ! -f requirements.lock ]; then
-    $VENV_PYTHON -m pip install -r wax/default-requirements.txt --no-build-isolation
-    $VENV_PYTHON -m pip install -r wax/requirements.txt --no-build-isolation
+    $VENV_PYTHON -m pip install -r wax/default-requirements.txt $PIP_INSTALL_ARGS
+    $VENV_PYTHON -m pip install -r wax/requirements.txt $PIP_INSTALL_ARGS
     $VENV_PYTHON -m pip freeze > requirements.lock
     cp wax/requirements.txt wax/used-requirements.txt
   else
