@@ -173,13 +173,22 @@
                 # You can update this to the latest release of pip:
                 "26.1.2";
             setuptoolsVersion =
-              if majorVersion == 3 && minorVersion <= 10 then
-                # Since setuptools v82, the pkg_resources module has been removed, which causes build
-                # issues with package cbor2 v5.4.2
-                "81.0.0"
+              if majorVersion == 3 then
+                if minorVersion <= 5 then
+                  "50.3.2"
+                else if minorVersion <= 6 then
+                  "59.6.0"
+                else if minorVersion <= 7 then
+                  "67.8.0"
+                else if minorVersion <= 10 then
+                  # Since setuptools v82, the pkg_resources module has been removed, which causes build
+                  # issues with package cbor2 v5.4.2
+                  "81.0.0"
+                else
+                  # You can update this to the latest release of setuptools:
+                  "82.0.1"
               else
-                # You can update this to the latest release of setuptools:
-                "82.0.1";
+                "44.1.1";
           };
 
           defaultConfig = {
