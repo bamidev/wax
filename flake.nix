@@ -346,6 +346,8 @@
               openldap
               pkg-config
               python.package
+              cargo
+              rustc
               wget
               wkhtmltopdf
               yq

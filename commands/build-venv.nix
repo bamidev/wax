@@ -10,11 +10,9 @@ let
     odooMajorVersion = odooMajorVersion;
     pythonVersion = python.version;
   };
-  envVariables = ''
-    DATABASE_NAME=${config.database.name}
-    ODOO_VERSION=${config.odooVersion}
-    DEFAULT_MERGE_DEPTH=100
-  '';
+  pythonMajorMinor = lib.versions.majorMinor python.version;
+  buildRequirements = builtins.readFile (../build-requirements + "/${pythonMajorMinor}/requirements.txt");
+  buildRequirementsLines = lib.strings.splitString "\n" buildRequirements;
 in
 with pkgs;
 ''
@@ -81,8 +79,9 @@ with pkgs;
     . wax/venv/bin/activate
   fi
 
-  $VENV_PYTHON -m pip install pip==${python.pipVersion} setuptools==${python.setuptoolsVersion} setuptools-scm wheel
-  PIP_INSTALL_ARGS="--no-build-isolation"
+  $VENV_PYTHON -m pip install pip==${python.pipVersion}
+  PIP_INSTALL_ARGS="--no-binary=:all: --no-build-isolation --no-cache-dir"
+'' + builtins.concatStringsSep "\n" (builtins.map (line: if line != "" then "$VENV_PYTHON -m pip install $PIP_INSTALL_ARGS ${line}" else "true") buildRequirementsLines) + ''
 
   if [ -f requirements.lock ]; then
     $VENV_PYTHON -m pip install -r requirements.lock $PIP_INSTALL_ARGS
