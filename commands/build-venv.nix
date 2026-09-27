@@ -4,6 +4,7 @@
   odooMajorVersion,
   pkgs,
   python,
+  pythonPackages ? null,
 }:
 let
   defaultRequirements = import ../default-requirements.nix {
@@ -11,13 +12,17 @@ let
     pythonVersion = python.version;
   };
   pythonMajorMinor = lib.versions.majorMinor python.version;
-  buildRequirements = builtins.readFile (../build-requirements + "/${pythonMajorMinor}/requirements.txt");
+  buildRequirements = builtins.readFile (
+    ../build-requirements + "/${pythonMajorMinor}/requirements.txt"
+  );
   buildRequirementsLines = lib.strings.splitString "\n" buildRequirements;
+  sitePackagesSubpath = "lib/python${pythonMajorMinor}/site-packages";
+  venvSitePackages = "wax/venv/${sitePackagesSubpath}";
 in
 with pkgs;
 ''
   #!/usr/bin/env bash
-  set -e
+  set -ex
   mkdir -p wax/{addons,log,repos}
 
   # Create some necessary files
@@ -79,27 +84,13 @@ with pkgs;
     . wax/venv/bin/activate
   fi
 
-  $VENV_PYTHON -m pip install pip==${python.pipVersion}
-  PIP_INSTALL_ARGS="--no-binary=:all: --no-build-isolation --no-cache-dir"
-'' + builtins.concatStringsSep "\n" (builtins.map (line: if line != "" then "$VENV_PYTHON -m pip install $PIP_INSTALL_ARGS ${line}" else "true") buildRequirementsLines) + ''
-
-  if [ -f requirements.lock ]; then
-    $VENV_PYTHON -m pip install -r requirements.lock $PIP_INSTALL_ARGS
-  fi
-
-  # Install the python packages into the virtual environment if no lock file is present yet
-  if [ ! -f requirements.lock ]; then
-    $VENV_PYTHON -m pip install -r wax/default-requirements.txt $PIP_INSTALL_ARGS
-    $VENV_PYTHON -m pip install -r wax/requirements.txt $PIP_INSTALL_ARGS
-    $VENV_PYTHON -m pip freeze > requirements.lock
-    cp wax/requirements.txt wax/used-requirements.txt
-  else
-    if [ ! -f wax/used-requirements.txt ]; then
-      cp wax/requirements.txt wax/used-requirements.txt
-    else
-      cmp wax/requirements.txt wax/used-requirements.txt || echo The Python requirements have \
-      been changed. Remove the requirements.lock file and run setup again to install the latest \
-      changes.
-    fi
+  if [ -e "${venvSitePackages}" ]; then
+    rm -r "${venvSitePackages}/"*
   fi
 ''
++ lib.optionalString (pythonPackages != null) (
+  lib.concatMapStringsSep "\n" (
+    pkg: "ln -sf ${pkg}/${sitePackagesSubpath}/* \"${venvSitePackages}/\""
+  ) (builtins.attrValues pythonPackages)
+)
++ ""
