@@ -19,6 +19,13 @@ let
     majorVersion = lib.strings.toInt (lib.versions.major version);
     minorVersion = lib.strings.toInt (lib.versions.minor version);
 
+    # Odoo 15 pins cryptography==2.6.1, which predates OpenSSL 3.x's API changes and fails to
+    # compile against it. Since distutils bakes the interpreter's own build-time openssl include/
+    # lib paths into every C extension it later builds (ahead of anything a package's own
+    # buildInputs adds), the interpreter itself has to be built against openssl_1_1 for that case,
+    # not just the individual python package.
+    opensslPackage = if odooMajorVersion == 15 then pkgs.openssl_1_1 else pkgs.openssl;
+
     package = pkgs.stdenv.mkDerivation (finalAttrs: rec {
       pname = "python";
       version = self.version;
@@ -45,21 +52,21 @@ let
         libxcrypt-legacy
         ncurses
         openldap
-        openssl
+        opensslPackage
         readline
         zlib
       ];
       configureFlags = with pkgs; [
-        "--with-openssl=${openssl.dev}"
+        "--with-openssl=${opensslPackage.dev}"
         "--with-pkg-config=yes"
       ];
       preConfigure = with pkgs; ''
         export CPPFLAGS="-I${zlib.dev}/include -I${libffi.dev}/include "\
         "-I${readline.dev}/include "\
-        "-I${bzip2.dev}/include -I${openssl.dev}/include";
+        "-I${bzip2.dev}/include -I${opensslPackage.dev}/include";
         export CXXFLAGS="$CPPFLAGS";
-        export CFLAGS="-I${openssl.dev}/include";
-        export LDFLAGS="-L${zlib.out}/lib -L${libffi.out}/lib -L${readline.out}/lib -L${bzip2.out}/lib -L${openssl.out}/lib";
+        export CFLAGS="-I${opensslPackage.dev}/include";
+        export LDFLAGS="-L${zlib.out}/lib -L${libffi.out}/lib -L${readline.out}/lib -L${bzip2.out}/lib -L${opensslPackage.out}/lib";
       '';
       preBuild = preConfigure;
 
@@ -86,16 +93,6 @@ let
           ];
     });
 
-    pipVersion =
-      if majorVersion == 2 || minorVersion < 6 then
-        "20.3.4"
-      else if minorVersion == 6 then
-        "21.3.1"
-      else if minorVersion == 7 then
-        "24.0"
-      else
-        # You can update this to the latest release of pip:
-        "26.1.2";
     setuptoolsVersion =
       if majorVersion == 3 then
         if minorVersion <= 5 then
@@ -113,6 +110,31 @@ let
           "82.0.1"
       else
         "44.1.1";
+
+    buildPythonPackage = import ./packages/build-python-package.nix {
+      inherit pkgs lib;
+      python = {
+        inherit version package;
+      };
+    };
+
+    # Curried so callers apply it to pythonDefaultPackages once (`pythonPackage =
+    # python.pythonPackage pythonDefaultPackages;`) and then use the resulting function like
+    # buildPythonPackage itself, without repeating the basePackages boilerplate in every odoo/N.nix.
+    pythonPackage =
+      pythonDefaultPackages: attrs:
+      buildPythonPackage (
+        attrs
+        // {
+          nativeBuildInputs =
+            (attrs.nativeBuildInputs or [ ])
+            ++ builtins.attrValues pythonDefaultPackages
+            ++ (with pkgs; [
+              pkg-config
+              libxcrypt-legacy
+            ]);
+        }
+      );
   };
 in
 self
