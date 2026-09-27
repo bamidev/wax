@@ -30,6 +30,13 @@ rec {
     hash = "sha256-vAwXb59qmUWCIw3zUKpuBbouvks6wxfqsp2b5dJ2jaA=";
   };
 
+  # requests dependency:
+  certifi = pythonPackage {
+    pname = "certifi";
+    version = "2024.8.30";
+    hash = "sha256-vslB0qqBleJIpgsx/58FWChM8BpSWRztpz6pr//Wn9k=";
+  };
+
   chardet = pythonPackage {
     pname = "chardet";
     version = "4.0.0";
@@ -249,6 +256,13 @@ rec {
     pname = "requests";
     version = "2.25.1";
     hash = "sha256-J5c91KkEpPE7JjoZyGbBO5KjntHJZGVfAl8/jT11uAQ=";
+  };
+
+  # python-dateutil dependency:
+  six = pythonPackage {
+    pname = "six";
+    version = "1.16.0";
+    hash = "sha256-HmHDdHehYmRY4297HYKqXJsJT6SAKJIHLknenGDEySY=";
   };
 
   urllib3 = pythonPackage {
