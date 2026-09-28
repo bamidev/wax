@@ -32,20 +32,27 @@ jobs:
         git config --global user.name "Wax CI Job"
         git config --global user.email "wax@wax.xxx"
 
+
+    - name: Test 20.0
+      run: |
+        sed -i 's/16.0/20.0/' config.nix
+        ./test.sh
+
     - name: Test 19.0
       run: |
-        sed -i 's/16.0/19.0/' config.nix
-        ./test.sh
+        sed -i 's/20.0/19.0/' config.nix
+        # Some versions of Odoo require a Python package that uses an old version of OpenSSL that is marked as insecure.
+        NIXPKGS_ALLOW_INSECURE=1 ./test.sh --impure
 
     - name: Test 18.0
       run: |
         sed -i 's/19.0/18.0/' config.nix
-        ./test.sh
+        NIXPKGS_ALLOW_INSECURE=1 ./test.sh --impure
 
     - name: Test 17.0
       run: |
         sed -i 's/18.0/17.0/' config.nix
-        ./test.sh
+        NIXPKGS_ALLOW_INSECURE=1 ./test.sh --impure
 
     - name: Test 16.0
       run: |
