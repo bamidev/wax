@@ -19,12 +19,19 @@ let
     majorVersion = lib.strings.toInt (lib.versions.major version);
     minorVersion = lib.strings.toInt (lib.versions.minor version);
 
-    # Odoo 15 pins cryptography==2.6.1, which predates OpenSSL 3.x's API changes and fails to
-    # compile against it. Since distutils bakes the interpreter's own build-time openssl include/
-    # lib paths into every C extension it later builds (ahead of anything a package's own
-    # buildInputs adds), the interpreter itself has to be built against openssl_1_1 for that case,
-    # not just the individual python package.
-    opensslPackage = if odooMajorVersion == 15 then pkgs.openssl_1_1 else pkgs.openssl;
+    # Odoo 15-18 all pin some version of cryptography, and every version we've hit so far needs
+    # openssl 1.1, not 3.x: 2.6.1 (odoo 15, python 3.7) predates OpenSSL 3.x's API changes and
+    # fails to even compile against it; 3.4.8 (odoo 16-18, python 3.7/3.10) compiles fine but
+    # calls FIPS_mode(), a real OpenSSL 1.1 function whose symbol is gone from OpenSSL 3.x's
+    # compiled libcrypto, so it links but fails at import time. Since distutils bakes the
+    # interpreter's own build-time openssl include/lib paths into every C extension it later
+    # builds (ahead of anything a package's own buildInputs adds), the interpreter itself has to
+    # be built against openssl_1_1, not just the individual python package.
+    opensslPackage =
+      if builtins.elem (lib.versions.majorMinor version) [ "3.7" "3.10" ] then
+        pkgs.openssl_1_1
+      else
+        pkgs.openssl;
 
     package = pkgs.stdenv.mkDerivation (finalAttrs: rec {
       pname = "python";

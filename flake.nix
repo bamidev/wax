@@ -270,9 +270,18 @@
             export PYTHONPATH="${python.package}/lib/site-packages"
             # Python 3.6 may fail if this environment variable is set to something
             unset _PYTHON_SYSCONFIGDATA_NAME
-            export LD_LIBRARY_PATH=\
-            "${stdenv.cc.cc.lib}/lib:"\
-            "${libxcrypt-legacy}/lib"
+            export LD_LIBRARY_PATH="${
+              lib.makeLibraryPath (
+                [
+                  stdenv.cc.cc.lib
+                  libxcrypt-legacy
+                ]
+                # python-magic (odoo 19) dlopen()s libmagic by bare name at import time; nix has
+                # no traditional /usr/lib for it to find via ldconfig, so it needs to be on
+                # LD_LIBRARY_PATH instead.
+                ++ lib.optionals (odooMajorVersion == 19) [ file ]
+              )
+            }"
 
             # Always activate the virtualenv once it exists upon entering the shell
             if [ -f wax/venv/bin/activate ]; then
