@@ -1,0 +1,488 @@
+# Odoo 20 is the first major version on python 3.11, so (unlike 17/18, which share
+# common/3.10.nix) there's nothing to consolidate into a common/ file yet - just the plain package
+# set below, pinned to what odoo's own requirements.txt resolves to for python_version == '3.11'
+# (falling back to each package's latest release where the upstream file leaves that python
+# version unpinned, since it otherwise expects a Debian 12 apt package instead of a pip one).
+{
+  config,
+  pkgs,
+  lib,
+  python,
+  pythonDefaultPackages,
+}:
+let
+  pythonPackage = python.pythonPackage pythonDefaultPackages;
+in
+rec {
+  asn1crypto = pythonPackage {
+    pname = "asn1crypto";
+    version = "1.5.1";
+    hash = "sha256-E644UCvmMhFav4oky+X02lLjtSMZkK/zESPIBTBsy5w=";
+  };
+
+  # zeep dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves). Modern releases moved to a hatchling+setuptools_scm build with no setup.py;
+  # 21.4.0 is the last release with a real setup.py.
+  attrs = pythonPackage {
+    pname = "attrs";
+    version = "21.4.0";
+    hash = "sha256-YmuoI0IR25joad92IwoTfExAoS1yRFxF1fW3FvB24v0=";
+  };
+
+  babel = pythonPackage {
+    pname = "Babel";
+    version = "2.10.3";
+    hash = "sha256-dhRVNxHul0kPcyEm3Ad/jQrghOvGqW4j2xSCr6vbLFE=";
+  };
+
+  # ofxparse dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves). Modern releases (>=4.11) ship no setup.py, only a hatchling-based pyproject.toml,
+  # which our setuptools-only builder can't drive - 4.10.0 is the last release with a real
+  # setup.py, same version already used for python 3.7/3.10 (see common/3.7.nix, common/3.10.nix).
+  beautifulsoup4 = pythonPackage {
+    pname = "beautifulsoup4";
+    version = "4.10.0";
+    hash = "sha256-wjrSPFIdgYlVpBUaZ9gVgDGdS/VI09SfQiOuBB/5iJE=";
+    nativeBuildInputs = [ soupsieve ];
+    pythonImportsCheck = [ "bs4" ];
+  };
+
+  # beautifulsoup4 dependency. Same hatchling-vs-setup.py constraint as above; 1.9.6 is the version
+  # already used elsewhere in this repo alongside beautifulsoup4 4.10.0.
+  soupsieve = pythonPackage {
+    pname = "soupsieve";
+    version = "1.9.6";
+    hash = "sha256-eYW6zJjDSSOkOZZ8GmAtxPHhX5I7b88CNEGE+GzH76o=";
+  };
+
+  # zeep dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves).
+  cached-property = pythonPackage {
+    pname = "cached-property";
+    version = "1.5.2";
+    hash = "sha256-n6V1WDjuy7LSNMOqOQvYD706xraGkQm/wbSZ972JoTA=";
+  };
+
+  # 6.x moved to a rust-only extension with no pure-python fallback at all (imports fail outright
+  # without cargo/rustc and crates.io network access, which the sandbox blocks). 5.6.2 - the exact
+  # version odoo's own requirements.txt pins for python_version >= '3.12' - still has a classic
+  # setup.py building a plain C extension, gracefully falling back to pure python when it's
+  # missing, and its setup.py itself checks CBOR2_BUILD_C_EXTENSION to skip building it entirely.
+  cbor2 = pythonPackage {
+    pname = "cbor2";
+    version = "5.6.2";
+    hash = "sha256-t1E8LeqIaJkfrX74iZiQ68+LGZubRGHDwR160670gg0=";
+    nativeBuildInputs = [ pythonDefaultPackages.setuptools-scm ];
+    preBuild = ''
+      export CBOR2_BUILD_C_EXTENSION=0
+    '';
+  };
+
+  # requests / zeep dependency. Not in odoo's requirements.txt (a transitive dep we have to
+  # supply ourselves).
+  certifi = pythonPackage {
+    pname = "certifi";
+    version = "2024.8.30";
+    hash = "sha256-vslB0qqBleJIpgsx/58FWChM8BpSWRztpz6pr//Wn9k=";
+  };
+
+  chardet = pythonPackage {
+    pname = "chardet";
+    version = "5.2.0";
+    hash = "sha256-Gztv9HmoxBS8P6LAhSmVaVxKAm3NbQYzst0JLKOcHPc=";
+  };
+
+  cryptography = pythonPackage {
+    pname = "cryptography";
+    version = "50.0.1";
+    hash = "sha256-Xdm9ocErQWL2/1aO614P+VbCjRRAbodc/opjotQU/yA=";
+    nativeBuildInputs = with pkgs; [
+      cargo
+      rustc
+    ];
+    buildInputs = [ pkgs.openssl ];
+    pythonImportsCheck = [ "cryptography" ];
+  };
+
+  docutils = pythonPackage {
+    pname = "docutils";
+    version = "0.20.1";
+    hash = "sha256-8IpOJ2w6FYOobc4+NKuj/gTQK7ot1R7RYQYkToqSPjs=";
+  };
+
+  freezegun = pythonPackage {
+    pname = "freezegun";
+    version = "1.2.1";
+    hash = "sha256-tMZO+ydea8aNxudxsX/+D/D5C4GipRiQQ1ULZRmSa6Q=";
+  };
+
+  geoip2 = pythonPackage {
+    pname = "geoip2";
+    version = "2.9.0";
+    hash = "sha256-9//p0ljnGkLPYizmNQ2XbeHQMSufL7zjl1x9g4tX7PA=";
+  };
+
+  gevent = pythonPackage {
+    pname = "gevent";
+    version = "26.9.0";
+    hash = "sha256-TdRwPXFzekVsHJ31zUOoKTTlsQyHVJyqAklfSH0e8LE=";
+  };
+
+  greenlet = pythonPackage {
+    pname = "greenlet";
+    version = "3.5.6";
+    hash = "sha256-jmfEO9/IjV/ubbDT5AF1s2L8lfuF8EEtIzubIDxTpXU=";
+  };
+
+  h11 = pythonPackage {
+    pname = "h11";
+    version = "0.16.0";
+    hash = "sha256-TjW5Vs9FeS5MqliF5p+6AL28b/r7+gIDAOVJsgjuX/E=";
+  };
+
+  idna = pythonPackage {
+    pname = "idna";
+    version = "3.20";
+    hash = "sha256-p9uFACW5Xe0eropGGBoabFbJLJbw4rAF2f+NwCEMq0Q=";
+  };
+
+  # zeep dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves).
+  isodate = pythonPackage {
+    pname = "isodate";
+    version = "0.6.1";
+    hash = "sha256-SMWIHefosKDWSMsCTIBi3ITnuEDtgehkx2FP08Envek=";
+  };
+
+  jinja2 = pythonPackage {
+    pname = "Jinja2";
+    version = "3.1.2";
+    hash = "sha256-MTUacCpAip51laj8YVD8P0O7a/fjGXcMvA2535Q36FI=";
+  };
+
+  libsass = pythonPackage {
+    pname = "libsass";
+    version = "0.22.0";
+    hash = "sha256-OrWtGOR9tWD08MCePSjPO7GkRxEldIisKtrWn09/hCU=";
+  };
+
+  lxml = pythonPackage {
+    pname = "lxml";
+    version = "6.1.3";
+    hash = "sha256-RSItlN3VEVNvOy99nerjsjObTODwdfHKJXA7B8rZ3SE=";
+    nativeBuildInputs = with pkgs; [
+      libxml2
+      libxslt
+    ];
+  };
+
+  # fetchPypi's legacy "/packages/source/<letter>/<pname>/..." URL 404s for this release (PyPI
+  # retired that path for newer uploads); fetch from the real hash-bucketed URL instead.
+  markupsafe = pythonPackage {
+    pname = "MarkupSafe";
+    version = "3.0.3";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/7e/99/7690b6d4034fffd95959cbe0c02de8deb3098cc577c67bb6a24fe5d7caa7/markupsafe-3.0.3.tar.gz";
+      hash = "sha256-ciaVgI9LZFezIP3BMSgHlr3OsEq1D+F5XNVAeZ6+Fpg=";
+    };
+  };
+
+  num2words = pythonPackage {
+    pname = "num2words";
+    version = "0.5.14";
+    hash = "sha256-sGbsGOVrZhajs4CGtXR9qvuqiGiyJqNhJ+BFHAzzecY=";
+  };
+
+  ofxparse = pythonPackage {
+    pname = "ofxparse";
+    version = "0.21";
+    hash = "sha256-BXq2jTEnDezk0aR2Yglqp2NBloqu4UX/xxHLRMvVxKc=";
+    nativeBuildInputs = [
+      beautifulsoup4
+      six
+    ];
+    pythonImportsCheck = [ "ofxparse" ];
+  };
+
+  openpyxl = pythonPackage {
+    pname = "openpyxl";
+    version = "3.1.5";
+    hash = "sha256-zw489WFCA5EzYotaz/6O8MEryQLSqt0+D+WHjcCNEFA=";
+  };
+
+  passlib = pythonPackage {
+    pname = "passlib";
+    version = "1.7.4";
+    hash = "sha256-3v1Q9ytlxUAqssVzgwppeOXyAq0NmEeTyN3ixBUuvgQ=";
+  };
+
+  # fetchPypi's legacy "/packages/source/<letter>/<pname>/..." URL 404s for this release (PyPI
+  # retired that path for newer uploads); fetch from the real hash-bucketed URL instead.
+  pillow = pythonPackage {
+    pname = "Pillow";
+    version = "12.3.0";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/1c/3d/bb7fca845737cf9d7dbde16ed1843984665ff2e0a518f5db43e77ec540b9/pillow-12.3.0.tar.gz";
+      hash = "sha256-O4GCp2ZoXqoAJjfii07I1rGIGaDHH1eb8NuqWDApfM4=";
+    };
+    buildInputs = with pkgs; [
+      zlib
+      libjpeg
+    ];
+    nativeBuildInputs = [ pybind11 ];
+  };
+
+  # zeep dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves). Ships no setup.py, only a dynamic [project] table (hatch-vcs). Only `version` is
+  # dynamic here though, so pinning just that (same technique as `packaging` elsewhere) is enough
+  # for our setup.py-less fallback to read the rest of the table directly.
+  platformdirs = pythonPackage {
+    pname = "platformdirs";
+    version = "4.2.0";
+    hash = "sha256-7wzHMd9xECLBdFQ8twqbW9IuWpM3yGJO8sLOuN2th2g=";
+    # Also has to drop the old-style "License :: OSI Approved :: MIT License" classifier: its
+    # pyproject.toml declares both that and a PEP 639 `license = "MIT"` expression, a combination
+    # setuptools rejects outright (classifiers are superseded by license expressions).
+    postPatch = ''
+      substituteInPlace pyproject.toml \
+        --replace-fail $'dynamic = [\n  "version",\n]' 'version = "4.2.0"' \
+        --replace-fail '"License :: OSI Approved :: MIT License",' ""
+    '';
+  };
+
+  polib = pythonPackage {
+    pname = "polib";
+    version = "1.1.1";
+    hash = "sha256-4Cw1WuXgVJEuOw0W/rxWUQ7/fknWC/Iq7LRjvS8qLfo=";
+  };
+
+  psutil = pythonPackage {
+    pname = "psutil";
+    version = "7.2.2";
+    hash = "sha256-B0b1+NQGrzRP1UfxyNql9cM9vCk7uNahbYC0u4j1k3I=";
+  };
+
+  psycopg2 = pythonPackage {
+    pname = "psycopg2";
+    version = "2.9.13";
+    hash = "sha256-02eE/C2uaVI7pLecfR0bTW6D6Hg2h08REmL025QLFqY=";
+    nativeBuildInputs = [ config.database.package.dev ];
+  };
+
+  # Pillow dependency. setup.py's only use of this is ParallelCompile, a pure-python build-speed
+  # helper - the real (>=3.0) pybind11 releases dropped setup.py entirely in favor of
+  # scikit-build-core (a CMake backend our setuptools-only builder can't drive), so pin the last
+  # setup.py-based release.
+  pybind11 = pythonPackage {
+    pname = "pybind11";
+    version = "2.13.6";
+    hash = "sha256-umrxA0jBKyTpL6CGs5z7oO/2GbYax3xAYWfYE7CW05o=";
+  };
+
+  # fetchPypi's legacy "/packages/source/<letter>/<pname>/..." URL 404s for this release (PyPI
+  # retired that path for newer uploads); fetch from the real hash-bucketed URL instead.
+  pyopenssl = pythonPackage {
+    pname = "pyOpenSSL";
+    version = "26.4.0";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/3f/e8/7325d258199b159eb2c03fe32107533e2832e70e63f4fb88a6aa00023201/pyopenssl-26.4.0.tar.gz";
+      hash = "sha256-KN/M4BYrkhFBPibfv98dJDF/vroY/JPBJAChhWsqC8c=";
+    };
+  };
+
+  # python-ldap dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves).
+  pyasn1 = pythonPackage {
+    pname = "pyasn1";
+    version = "0.5.1";
+    hash = "sha256-bTkaluWbIxMKXPp01v1/OI274mzI8e3zn93fCNnWZ2w=";
+  };
+
+  # python-ldap dependency:
+  pyasn1-modules = pythonPackage {
+    pname = "pyasn1_modules";
+    version = "0.3.0";
+    hash = "sha256-W9AURrc2650xUSow1GwawzldZ2xvPK+kwD61S5klYxw=";
+    nativeBuildInputs = [ pyasn1 ];
+  };
+
+  pypdf2 = pythonPackage {
+    pname = "PyPDF2";
+    version = "2.12.1";
+    hash = "sha256-4D7xirzHXadBoKzBp3SSU0loh744zZiHvM4c7jk9pF4=";
+  };
+
+  pyserial = pythonPackage {
+    pname = "pyserial";
+    version = "3.5";
+    hash = "sha256-PHfgFBcN//vYFub/wgXphC77EL6fWOwW0+hnW0klzds=";
+  };
+
+  python-dateutil = pythonPackage {
+    pname = "python-dateutil";
+    version = "2.8.2";
+    hash = "sha256-ASPKzBYnrhnd88J6XeW9Z+5FhvvdZEDZdI+Ku0g9PoY=";
+  };
+
+  # fetchPypi's legacy "/packages/source/<letter>/<pname>/..." URL 404s for this release (PyPI
+  # retired that path for newer uploads); fetch from the real hash-bucketed URL instead.
+  python-ldap = pythonPackage {
+    pname = "python-ldap";
+    version = "3.4.8";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/1c/45/489fcf46984f916ef165cdc6a2a1f1ca01ab6f486d47169256ebe44bdd62/python_ldap-3.4.8.tar.gz";
+      hash = "sha256-GNx0YEcMb/ZO1cBO4hxW2/7nq0M6UyE7qR5AfupEw0w=";
+    };
+    nativeBuildInputs = with pkgs; [
+      cyrus_sasl
+      openldap
+    ]
+    ++ [
+      pyasn1
+      pyasn1-modules
+    ];
+    preBuild = ''
+      mkdir -p ldap-shim
+      ln -s ${pkgs.openldap}/lib/libldap.so ldap-shim/libldap_r.so
+      export NIX_LDFLAGS="-L$PWD/ldap-shim $NIX_LDFLAGS"
+    '';
+    pythonImportsCheck = [ "ldap" ];
+  };
+
+  python-magic = pythonPackage {
+    pname = "python-magic";
+    version = "0.4.27";
+    hash = "sha256-wboUsI5KX1wxowK3chI5aVsvDwWNElvVzh7ja52dPDs=";
+  };
+
+  python-stdnum = pythonPackage {
+    pname = "python-stdnum";
+    version = "1.19";
+    hash = "sha256-Ez7IL1Y5DqdMGQVp6Y8vsUuGmAix1UeFcI8i0P6tiz8=";
+  };
+
+  # zeep dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves).
+  pytz = pythonPackage {
+    pname = "pytz";
+    version = "2025.2";
+    hash = "sha256-NguePbtJognCGtYYCcf7RTZD4EiziSTHZYE1RnRugcM=";
+  };
+
+  pyusb = pythonPackage {
+    pname = "pyusb";
+    version = "1.2.1";
+    hash = "sha256-pMx0BKIDFEdUFkuLQJlOKEn94c//BrCEkvEv/52d57k=";
+    pythonImportsCheck = [ "usb" ];
+  };
+
+  qrcode = pythonPackage {
+    pname = "qrcode";
+    version = "7.4.2";
+    hash = "sha256-ndlpRUgn4Sfb2TaWsgdHI55tVA4IKTfJDxSslbMPWEU=";
+  };
+
+  reportlab = pythonPackage {
+    pname = "reportlab";
+    version = "5.0.1";
+    hash = "sha256-69ExVL4chRXmZd5wvS0wOundw+9H5Er9URZEHKAoOiY=";
+  };
+
+  requests = pythonPackage {
+    pname = "requests";
+    version = "2.31.0";
+    hash = "sha256-lCxadY+Y15Dq7Ropy27vx/+w0c968Fw9J5Flbb1q0eE=";
+  };
+
+  # zeep dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves).
+  requests-file = pythonPackage {
+    pname = "requests-file";
+    version = "1.5.1";
+    hash = "sha256-B9dCCNM4nQHDirie9AOvDP7GOVfVOgCB2OynONAkfY4=";
+  };
+
+  # zeep dependency:
+  requests-toolbelt = pythonPackage {
+    pname = "requests-toolbelt";
+    version = "1.0.0";
+    hash = "sha256-doGgo9BHAStb3A7jfX+PB+vnarCMrsz8OSHOI8iNW8Y=";
+  };
+
+  rjsmin = pythonPackage {
+    pname = "rjsmin";
+    version = "1.2.0";
+    hash = "sha256-bFKf62xACYRFJJTFLdn99ZGFr+rMoq/FF0ooqzd1Ghs=";
+  };
+
+  # python-dateutil / ofxparse dependency. Not in odoo's requirements.txt (a transitive dep we
+  # have to supply ourselves).
+  six = pythonPackage {
+    pname = "six";
+    version = "1.17.0";
+    hash = "sha256-/3AzXUaOfrbsZblbmdOig2VGBj9jrMUXHeNn6DSTKoE=";
+  };
+
+  urllib3 = pythonPackage {
+    pname = "urllib3";
+    version = "2.8.0";
+    hash = "sha256-Y78urUyHlCbr8i7yp4HutKo7SueYoENVBvhof9W7m2M=";
+  };
+
+  vobject = pythonPackage {
+    pname = "vobject";
+    version = "0.9.6.1";
+    hash = "sha256-llEq7HS5Crtx9rU4mN1/5HMAzJQBBMT3kUjwZx95AQE=";
+  };
+
+  # fetchPypi's legacy "/packages/source/<letter>/<pname>/..." URL 404s for this release (PyPI
+  # retired that path for newer uploads); fetch from the real hash-bucketed URL instead.
+  werkzeug = pythonPackage {
+    pname = "Werkzeug";
+    version = "3.1.9";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/a4/34/4dd12fc8bb7d61c91467ec3efe415ffa7d5456f799954b40c5bbaeae470e/werkzeug-3.1.9.tar.gz";
+      hash = "sha256-Vcp8cKdWib6TeqJ/j/SwGPBv9IOPxzBFVgvw9aEpEGA=";
+    };
+  };
+
+  xlrd = pythonPackage {
+    pname = "xlrd";
+    version = "2.0.2";
+    hash = "sha256-CLXiXeWPIc5x3H2zs7gQbB+ndvMCTFTkW0WzdOiSNMk=";
+  };
+
+  # fetchPypi's legacy "/packages/source/<letter>/<pname>/..." URL 404s for this release (PyPI
+  # retired that path for newer uploads); fetch from the real hash-bucketed URL instead.
+  xlsxwriter = pythonPackage {
+    pname = "XlsxWriter";
+    version = "3.2.9";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/46/2c/c06ef49dc36e7954e55b802a8b231770d286a9758b3d936bd1e04ce5ba88/xlsxwriter-3.2.9.tar.gz";
+      hash = "sha256-JUscN6NoxETqxuL4Z0BcyeRhsO2XoyM7KsHldO+0FAw=";
+    };
+  };
+
+  zeep = pythonPackage {
+    pname = "zeep";
+    version = "4.2.1";
+    hash = "sha256-cgk6z9sdg2DtQAhptz+/GIK5XEKH95gITELuDB/w5CU=";
+    nativeBuildInputs = [
+      attrs
+      cached-property
+      certifi
+      chardet
+      idna
+      isodate
+      lxml
+      platformdirs
+      pytz
+      requests
+      requests-file
+      requests-toolbelt
+      six
+      urllib3
+    ];
+    pythonImportsCheck = [ "zeep" ];
+  };
+}

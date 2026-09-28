@@ -14,8 +14,10 @@ let
         "3.6.15"
       else if odooMajorVersion < 17 then
         "3.7.17"
+      else if odooMajorVersion < 20 then
+        "3.10.15"
       else
-        "3.10.15";
+        "3.11.16";
     majorVersion = lib.strings.toInt (lib.versions.major version);
     minorVersion = lib.strings.toInt (lib.versions.minor version);
 
@@ -49,6 +51,8 @@ let
             "sha256-eREFHtBCL9VLj1n/wDD3zyrjDg9hvaGRgAuwQNzk+dI="
           else if finalAttrs.version == "3.10.15" then
             "sha256-qrCVCBdzUXJgGHmHLZN8HkkopXxAmuAjaew9kdzOvnk="
+          else if finalAttrs.version == "3.11.16" then
+            "sha256-kbzev93iOaADrpNzin/OD5Iw/uXEvCuG9uboxvmKq+g="
           else
             lib.fakeHash;
       };
@@ -60,6 +64,7 @@ let
         ncurses
         openldap
         opensslPackage
+        pkg-config
         readline
         zlib
       ];
@@ -113,8 +118,7 @@ let
           # issues with package cbor2 v5.4.2
           "81.0.0"
         else
-          # You can update this to the latest release of setuptools:
-          "82.0.1"
+          "84.0.0"
       else
         "44.1.1";
 
