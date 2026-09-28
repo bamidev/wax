@@ -197,6 +197,11 @@ rec {
     pname = "gevent";
     version = "26.9.0";
     hash = "sha256-TdRwPXFzekVsHJ31zUOoKTTlsQyHVJyqAklfSH0e8LE=";
+    nativeBuildInputs = [
+      zope-event
+      zope-interface
+    ];
+    pythonImportsCheck = [ "gevent" ];
   };
 
   greenlet = pythonPackage {
@@ -577,5 +582,32 @@ rec {
       urllib3
     ];
     pythonImportsCheck = [ "zeep" ];
+  };
+
+  # gevent dependency (gevent.monkey.patch_all imports gevent.events, which needs this
+  # unconditionally). Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves). fetchPypi's legacy URL 404s for this release; fetch from the real
+  # hash-bucketed URL instead.
+  zope-event = pythonPackage {
+    pname = "zope.event";
+    version = "6.2";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/93/41/faa10af34d48d9cd6fa0249a1162943ad84a9590bd1a06939981e6640416/zope_event-6.2.tar.gz";
+      hash = "sha256-uX1dYycGfua538vfYGremt5wmR4ZwWLoCOo55fzw+NM=";
+    };
+    pythonImportsCheck = [ "zope.event" ];
+  };
+
+  # gevent dependency, same as zope.event above. Its C extension build failure is caught and
+  # degrades gracefully to pure python (see its setup.py's optional_build_ext), so it doesn't
+  # need any special handling here.
+  zope-interface = pythonPackage {
+    pname = "zope.interface";
+    version = "8.6";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/26/39/a8481b926e42c44a6fcc670904f8251469ec42edbff1ba066719ca1e7fb4/zope_interface-8.6.tar.gz";
+      hash = "sha256-tA75tIc6+10N7AK40t/eHPGMcjN7YMmctzWWHgusBcA=";
+    };
+    pythonImportsCheck = [ "zope.interface" ];
   };
 }
