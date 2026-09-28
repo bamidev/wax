@@ -276,10 +276,10 @@
                   stdenv.cc.cc.lib
                   libxcrypt-legacy
                 ]
-                # python-magic (odoo 19) dlopen()s libmagic by bare name at import time; nix has
+                # python-magic (odoo 19+) dlopen()s libmagic by bare name at import time; nix has
                 # no traditional /usr/lib for it to find via ldconfig, so it needs to be on
                 # LD_LIBRARY_PATH instead.
-                ++ lib.optionals (odooMajorVersion == 19) [ file ]
+                ++ lib.optionals (odooMajorVersion >= 19) [ file ]
               )
             }"
 

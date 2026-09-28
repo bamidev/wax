@@ -71,6 +71,11 @@ let
       configureFlags = with pkgs; [
         "--with-openssl=${opensslPackage.dev}"
         "--with-pkg-config=yes"
+        # Without a shared libpython, abi3 (stable-ABI) extension modules built with pyo3/maturin
+        # (e.g. cryptography on odoo 20+) crash on import with "PyInterpreterState_Get: the
+        # function must be called with the GIL held" - confirmed via a minimal pyo3 extension that
+        # crashed identically against a non-shared build but worked fine once built with this flag.
+        "--enable-shared"
       ];
       preConfigure = with pkgs; ''
         export CPPFLAGS="-I${zlib.dev}/include -I${libffi.dev}/include "\
