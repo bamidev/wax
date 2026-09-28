@@ -73,6 +73,13 @@ lib.makeOverridable (
     # don't use setuptools_scm.
     SETUPTOOLS_SCM_PRETEND_VERSION = version;
 
+    # The nix sandbox has no locale configured, so anything reading non-ASCII bytes from a
+    # metadata file (e.g. configparser parsing setup.cfg) fails with UnicodeDecodeError on
+    # Python < 3.7 - unlike 3.7+, which auto-coerces to a UTF-8 locale at startup (PEP 538).
+    # Harmless on newer Python versions, so set unconditionally rather than only for old ones.
+    LOCALE_ARCHIVE = "${pkgs.glibcLocalesUtf8}/lib/locale/locale-archive";
+    LANG = "en_US.UTF-8";
+
     # We don't use pip or a venv to resolve dependencies, so put sibling Python packages
     # (declared as native/propagated build inputs) on PYTHONPATH ourselves.
     PYTHONPATH = lib.makeSearchPath sitePackages (nativeBuildInputs ++ propagatedBuildInputs);
