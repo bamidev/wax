@@ -37,7 +37,7 @@ Here is an example Nix flake for you Odoo project:
 `config.nix`:
 ```
 {
-  odooVersion = "16.0";
+  odooVersion = "20.0";
   database.name = "my-database";
 
   odooConfig = {
@@ -48,13 +48,13 @@ Here is an example Nix flake for you Odoo project:
 
   repos.spec = {
     odoo = {
-      ref = "16.0";
+      ref = "20.0";
       url = "https://github.com/odoo/odoo.git";
       remotes = {   # Git remotes here
         bamidev = "https://github.com/bamidev/odoo.git";
       };
       merges = {    # All commits that will be merged into the repo
-        bamidev = "16.0-fix-a-thing";
+        bamidev = "20.0-fix-a-thing";
       };
     };
 
@@ -67,8 +67,8 @@ Here is an example Nix flake for you Odoo project:
       # When multiple branches from the same repo need to be merged in, we can't use attrsets, so
       # use lists instead:
       merges = [
-        ["therp" "16.0-add-partner_multi_relation_address"]
-        ["therp" "16.0-add-partner_multi_relation_function"]
+        ["therp" "20.0-add-partner_multi_relation_address"]
+        ["therp" "20.0-add-partner_multi_relation_function"]
       ];
     };
 
@@ -77,10 +77,30 @@ Here is an example Nix flake for you Odoo project:
     web = {};
   };
 
-  pythonRequirements = [
-    "psycopg2"
-    "debugpy"
-  ];
+  # Optional: append or override python packages added to the venv, on top of what Wax already
+  # provides for the given Odoo version.
+  pythonPackageOverrides = { prev, pythonPackage }: {
+    # Append a package
+    paypal = pythonPackage {
+      version = "1.2.5";
+      hash = "sha256-...";
+    };
+
+    # Bump an existing package to a different version.
+    six = prev.six.override {
+      version = "1.16.0";
+      hash = "sha256-...";
+    };
+  };
+
+  # Optional: same idea, but for the extra packages `setup-dev` & `build-dev` installs (see below).
+  # Useful for adding development packages that do not need to exist in production environments.
+  devPythonPackageOverrides = { prev, pythonPackage }: {
+    black = pythonPackage {
+      version = "26.5.1";
+      hash = "sha256-...";
+    };
+  };
 
   # Optional:
   repos.depth.deepen.base = 500;
@@ -158,13 +178,9 @@ Runs Odoo. You may not see any output in most cases, because by default, the out
 
 ### setup-dev
 
-Installs some development related python packages into the virtual environment.
-This includes:
-* `odoo-repl`
-* `debugpy`
-* The `pylsp` Python LSP
-* `pylint-odoo`
-* `odoo` and `openupgradelib`, which is made available to `pylsp` when run `wax/venv/bin/pylsp`.
+Installs development-related python packages into the virtual environment on top of what `build`
+already installs - things like `debugpy`, the `pylsp` Python LSP and its plugins, `pylint-odoo`,
+and `openupgradelib`. The exact set depends on the version of Odoo.
 
 ### build-dev
 
