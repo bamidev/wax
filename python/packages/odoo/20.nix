@@ -211,6 +211,11 @@ rec {
     hash = "sha256-0oPTeokLpMGuc/+t+ARkNcdue8Ike7tjwAvRpwnGVEs=";
   };
 
+  # geoip2 dependency. Not in odoo's requirements.txt (a transitive dep we have to supply
+  # ourselves) - geoip2 itself declares no formal nix dependency on it either, so it just needs to
+  # be exposed as a top-level package here too so build-venv copies it into site-packages.
+  inherit (common310) maxminddb;
+
   num2words = pythonPackage {
     pname = "num2words";
     version = "0.5.13";
