@@ -33,7 +33,19 @@
               ;
             config = completeConfig;
           };
-          pythonPackages = pythonDefaultPackages // odooPackages;
+          # Lets a consuming flake alter or add packages without forking wax: pass
+          # `pythonPackageOverrides = prev: { foo = prev.foo.override { ... }; bar = ...; };` in
+          # config. Every package here is already `lib.makeOverridable` (see
+          # build-python-package.nix), so `prev.foo.override {...}` works directly. This is a
+          # plain `prev`-only merge, not a fixed-point overlay: overriding a package here doesn't
+          # propagate into any OTHER package that already references the original internally via
+          # its own nativeBuildInputs (each odoo/N.nix file is a plain `rec {}`, not
+          # `final: prev: {}`) - only things built directly against this final merged set see it.
+          pythonPackages =
+            let
+              basePythonPackages = pythonDefaultPackages // odooPackages;
+            in
+            basePythonPackages // (completeConfig.pythonPackageOverrides or (prev: { })) basePythonPackages;
 
           postgresContainerImage =
             if completeConfig.database.allow_containerization then
