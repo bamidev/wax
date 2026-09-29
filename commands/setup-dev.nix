@@ -26,3 +26,11 @@ in
     chmod -R u+w "${venvSitePackages}"
   ''
 ) packages
++ ''
+
+  # Make the local Odoo checkout (cloned by build-repos into wax/repos/odoo) importable from the
+  # venv, the same way `pip install -e` would: a .pth file just adds a path to sys.path at
+  # interpreter startup, no copying needed - so edits made to the checkout are picked up
+  # immediately by dev tooling (pylsp, pylint-odoo, mypy, ...) run through the venv's python.
+  echo "$(realpath wax/repos/odoo)" > "${venvSitePackages}/odoo.pth"
+''
