@@ -1,5 +1,7 @@
 { pkgs, odooMajorVersion, ... }:
 ''
+  set -euo pipefail
+
   CMD_PREFIX="${pkgs.expect}/bin/unbuffer wax/venv/bin/python wax/repos/odoo"
   CMD_POSTFIX="-c wax/odoo.cfg"
   if [ ${toString odooMajorVersion} -lt 8 ]; then
