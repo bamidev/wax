@@ -89,8 +89,9 @@ with pkgs;
   fi
 ''
 + lib.optionalString (pythonPackages != null) (
-  lib.concatMapStringsSep "\n" (
-    pkg: "ln -sf ${pkg}/${sitePackagesSubpath}/* \"${venvSitePackages}/\""
-  ) (builtins.attrValues pythonPackages)
+  lib.concatMapStringsSep "\n" (pkg: ''
+    cp -r --no-clobber ${pkg}/${sitePackagesSubpath}/. "${venvSitePackages}/"
+    chmod -R u+w "${venvSitePackages}"
+  '') (builtins.attrValues pythonPackages)
 )
 + ""
