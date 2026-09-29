@@ -39,19 +39,31 @@
             let
               basePythonPackages = pythonDefaultPackages // odooPackages;
             in
-            basePythonPackages // (completeConfig.pythonPackageOverrides or (prev: { })) basePythonPackages;
+            basePythonPackages
+            // (completeConfig.pythonPackageOverrides or ({ ... }: { })) {
+              prev = basePythonPackages;
+              pythonPackage = python.pythonPackage pythonDefaultPackages;
+            };
 
           # The additional packages that will be added to the virtualenv via command `setup-dev`.
-          devPythonPackages = import ./python/packages/dev.nix {
-            inherit
-              pkgs
-              lib
-              python
-              pythonDefaultPackages
-              odooPackages
-              odooMajorVersion
-              ;
-          };
+          devPythonPackages =
+            let
+              baseDevPythonPackages = import ./python/packages/dev.nix {
+                inherit
+                  pkgs
+                  lib
+                  python
+                  pythonDefaultPackages
+                  odooPackages
+                  odooMajorVersion
+                  ;
+              };
+            in
+            baseDevPythonPackages
+            // (completeConfig.devPythonPackageOverrides or ({ ... }: { })) {
+              prev = baseDevPythonPackages;
+              pythonPackage = python.pythonPackage pythonDefaultPackages;
+            };
 
           postgresContainerImage =
             if completeConfig.database.allow_containerization then
