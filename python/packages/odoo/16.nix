@@ -51,6 +51,10 @@ common
     pname = "gevent";
     version = "20.9.0";
     hash = "sha256-X21IBR0zZWHsCJlUMe5NJlrHI6ZLupnMWMPrGk1PXI0=";
+    nativeBuildInputs = [
+      common.zope-event
+      common.zope-interface
+    ];
   };
 
   greenlet = pythonPackage {

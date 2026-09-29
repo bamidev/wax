@@ -176,4 +176,20 @@ rec {
     version = "1.3.0";
     hash = "sha256-xZkScXqbKPGjwqmP1gdBAUsGsEOTbc7LwRPqqtoVbIg=";
   };
+
+  # gevent dependency (gevent.monkey.patch_all imports gevent.events, which needs this
+  # unconditionally - only true from gevent 1.5.0 onward, which is why this isn't needed by any
+  # odoo version older than 15).
+  zope-event = pythonPackage {
+    pname = "zope.event";
+    version = "4.6";
+    hash = "sha256-gdmIEwRvyGzEE242mP7mKKMoL5wyDbGGWMIXSSNfzoA=";
+  };
+
+  # gevent dependency, same as zope.event above.
+  zope-interface = pythonPackage {
+    pname = "zope.interface";
+    version = "5.5.2";
+    hash = "sha256-v+4fP/YhQ4GUmeNI9bin86oCWfmspeDdrnOR0Fnc5nE=";
+  };
 }

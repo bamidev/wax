@@ -30,6 +30,10 @@ common
     pname = "gevent";
     version = "21.8.0";
     hash = "sha256-Q+k+Gkc4ySKiQWuvM/CvsKILItPbqIZyC8A3zQKphXU=";
+    nativeBuildInputs = [
+      common.zope-event
+      common.zope-interface
+    ];
   };
 
   # Wraps libmagic via ctypes.CDLL('libmagic.so.1'), an eager dlopen() at import time. There's no

@@ -133,6 +133,10 @@ rec {
     pname = "gevent";
     version = "21.12.0";
     hash = "sha256-9ItkV4w2e5H6eTv46qr0mVy5PIvEWGDkc7+GgHCtCU4=";
+    nativeBuildInputs = [
+      zope-event
+      zope-interface
+    ];
   };
 
   greenlet = pythonPackage {
@@ -308,13 +312,16 @@ rec {
     pname = "python-ldap";
     version = "3.4.0";
     hash = "sha256-YEZMj8JeceD9QESaJOrkgtzQ+3/Pgj595iemUls+DRI=";
-    nativeBuildInputs = with pkgs; [
-      cyrus_sasl
-      openldap
-    ] ++ [
-      pyasn1
-      pyasn1-modules
-    ];
+    nativeBuildInputs =
+      with pkgs;
+      [
+        cyrus_sasl
+        openldap
+      ]
+      ++ [
+        pyasn1
+        pyasn1-modules
+      ];
 
     preBuild = ''
       mkdir -p ldap-shim
@@ -445,5 +452,20 @@ rec {
       urllib3
     ];
     pythonImportsCheck = [ "zeep" ];
+  };
+
+  # gevent dependency (gevent.monkey.patch_all imports gevent.events, which needs this
+  # unconditionally).
+  zope-event = pythonPackage {
+    pname = "zope.event";
+    version = "4.6";
+    hash = "sha256-gdmIEwRvyGzEE242mP7mKKMoL5wyDbGGWMIXSSNfzoA=";
+  };
+
+  # gevent dependency, same as zope.event above.
+  zope-interface = pythonPackage {
+    pname = "zope.interface";
+    version = "5.5.2";
+    hash = "sha256-v+4fP/YhQ4GUmeNI9bin86oCWfmspeDdrnOR0Fnc5nE=";
   };
 }
