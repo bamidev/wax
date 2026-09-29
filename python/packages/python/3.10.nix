@@ -14,11 +14,11 @@ rec {
     pname = "cffi";
     version = "1.15.1";
     hash = "sha256-1AC/uaN7E1ElPLQCZxzqfom97MKU6AFqcH9tHYrJNPk=";
-    nativeBuildInputs = [
+    dependencies = [
       setuptools
       pycparser
-      pkgs.pkg-config
     ];
+    nativeBuildInputs = [ pkgs.pkg-config ];
     buildInputs = with pkgs; [
       libffi
       libxcrypt-legacy
@@ -26,24 +26,19 @@ rec {
     pythonImportsCheck = [ "cffi" ];
   };
 
+  # zipp's own closure already covers setuptools/packaging/setuptools-scm/tomli - see zipp below.
   importlib-metadata = buildPythonPackage {
     pname = "importlib_metadata";
     version = "6.7.0";
     hash = "sha256-Gq9VDU9z5dZ4PnrLd67EPUnagBdBCvrpOCLMnMqYxNQ=";
-    nativeBuildInputs = [
-      packaging
-      setuptools
-      setuptools-scm
-      tomli
-      zipp
-    ];
+    dependencies = [ zipp ];
   };
 
   packaging = buildPythonPackage {
     pname = "packaging";
     version = "24.2";
     hash = "sha256-wiim3F6TLTRrxXOTeRCdSeiFPdgiNXHHxbVSYO3AuX8=";
-    nativeBuildInputs = [ setuptools ];
+    dependencies = [ setuptools ];
     # setuptools 81's own PEP 639 license-field handling needs packaging>=24.2 (for
     # packaging.licenses) to build ANY package whose pyproject.toml has a plain `license = "..."`
     # string - not just packages that declare packaging as their own dependency. That's also why
@@ -64,7 +59,7 @@ rec {
     pname = "pycparser";
     version = "2.21";
     hash = "sha256-5kT97BL3hy+GxY/3kNpFYhixD4Y5cCSVFtYKXqyncgY=";
-    nativeBuildInputs = [ setuptools ];
+    dependencies = [ setuptools ];
     pythonImportsCheck = [ "pycparser" ];
   };
 
@@ -81,14 +76,28 @@ rec {
     pythonImportsCheck = [ "setuptools" ];
   };
 
+  vcs-versioning = buildPythonPackage {
+    pname = "vcs-versioning";
+    version = "2.5.0";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/6f/a0/6977bb418312ad30f27e522c5040604d4bbf7e40ccd5a11d333afe549354/vcs_versioning-2.5.0.tar.gz";
+      hash = "sha256-lWp5bjH4D+cU0hnW0d8Vpr8kfRD22FG/S5gnnQpC2lU=";
+    };
+    dependencies = [
+      packaging
+      setuptools
+      tomli
+      typing-extensions
+    ];
+    pythonImportsCheck = [ "vcs_versioning" ];
+  };
+
   setuptools-scm = buildPythonPackage {
     pname = "setuptools_scm";
-    version = "7.1.0";
-    hash = "sha256-bFCDRadxqtfVbr/w5wYovysOx1c3Yr6ZYCFHMN4njyc=";
-    nativeBuildInputs = [
-      setuptools
-      packaging
-    ];
+    version = "10.3.4";
+    hash = "sha256-pp8ov8JFYIeBIF6RL6rkN8KyFldzr6TnuXnXdEemndI=";
+    buildViaWheel = true;
+    dependencies = [ vcs-versioning ];
     pythonImportsCheck = [ "setuptools_scm" ];
   };
 
@@ -96,7 +105,7 @@ rec {
     pname = "tomli";
     version = "2.0.1";
     hash = "sha256-3lJsEpFPDFUNFZJMYtcqvEjW/nNkqocygzejEAf+ik8=";
-    nativeBuildInputs = [ setuptools ];
+    dependencies = [ setuptools ];
     pythonImportsCheck = [ "tomli" ];
   };
 
@@ -104,7 +113,7 @@ rec {
     pname = "typing_extensions";
     version = "4.7.1";
     hash = "sha256-t13cJk8LpWFdt7ohfa65lwGtKVNTxF+elZYzN87u/7I=";
-    nativeBuildInputs = [ setuptools ];
+    dependencies = [ setuptools ];
     pythonImportsCheck = [ "typing_extensions" ];
   };
 
@@ -112,7 +121,7 @@ rec {
     pname = "setuptools-rust";
     version = "1.7.0";
     hash = "sha256-xxAJmZSCNaOK5+VV/hmapmwlPcOEsSX12FRzv4Hq46M=";
-    nativeBuildInputs = [
+    dependencies = [
       setuptools
       semantic-version
       typing-extensions
@@ -125,11 +134,6 @@ rec {
     pname = "zipp";
     version = "3.15.0";
     hash = "sha256-ESkprWSdqUHCPeUPNWorVXDJVLZRUGQrzN1mvxlNIks=";
-    nativeBuildInputs = [
-      packaging
-      setuptools
-      setuptools-scm
-      tomli
-    ];
+    dependencies = [ setuptools-scm ];
   };
 }
