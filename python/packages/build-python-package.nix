@@ -1,10 +1,6 @@
 # A small, self-contained alternative to nixpkgs' buildPythonPackage, targeting Wax's own
-# custom-built Python interpreter instead of a nixpkgs-provided one. It doesn't use pip: it
-# drives distutils/setuptools directly (`setup.py build` / `setup.py install`).
-#
-# Only the "setuptools" format (a plain setup.py-based sdist) is implemented so far. PEP517-only
-# backends (hatchling, poetry-core, maturin, ...) aren't supported yet; add handling for those as
-# we run into packages that need them.
+# custom-built Python interpreter instead of a nixpkgs-provided one.
+# It supports a few different build backends, see below.
 {
   pkgs,
   lib,
@@ -14,9 +10,11 @@ let
   pythonMajorMinor = lib.versions.majorMinor python.version;
   sitePackages = "lib/python${pythonMajorMinor}/site-packages";
   pythonExecutable = "${python.package}/bin/python${pythonMajorMinor}";
-in
-lib.makeOverridable (
-  {
+
+  # The real implementation, with no implicit poetry-core injection - used directly to build
+  # poetry-core itself (see poetry-core.nix), which obviously can't depend on itself.
+  buildPythonPackageBase = lib.makeOverridable (
+    {
     pname,
     version,
     # By default the source is fetched from PyPI using pname/version/hash. Pass `src` directly
@@ -46,15 +44,32 @@ lib.makeOverridable (
     # own consistency check between the source tree's Cargo.lock and the vendored one otherwise
     # always looks at the source root.
     cargoRoot ? null,
-    # Build via a real PEP 517 wheel (setuptools.build_meta.build_wheel + unzip into
-    # site-packages) instead of driving `setup.py build`/`install` directly. Needed for packages
-    # whose classic install path hits distutils' install_lib.byte_compile(), which spawns a
-    # *detached* python subprocess running a bare "from distutils.util import byte_compile"
-    # script - it never imports setuptools itself, so it never gets setuptools'
-    # local-vendored-distutils shim, and hard-fails on Python 3.12+ (which removed the real
-    # stdlib distutils entirely). A real pip install never hits this at all, since pip always
-    # builds a wheel via PEP 517 and installs from that - this opts a package into the same path.
-    buildViaWheel ? false,
+    # Which build backend drives this package, instead of the default classic `setup.py
+    # build`/`install` path:
+    #   - "setup.py" (default): drive `setup.py build`/`install` directly (or a synthesized
+    #     `setuptools.setup()` shim when no setup.py exists), reading pyproject.toml's [project]
+    #     table natively via setuptools' own PEP 621 support - regardless of the package's own
+    #     *declared* build-backend (hatchling, flit_core, ...), since this path never actually
+    #     invokes it.
+    #   - "wheel": build a real PEP 517 wheel via setuptools.build_meta.build_wheel() and unzip it
+    #     into site-packages, instead of driving `setup.py build`/`install` directly. Needed for
+    #     packages whose classic install path hits distutils' install_lib.byte_compile(), which
+    #     spawns a *detached* python subprocess running a bare "from distutils.util import
+    #     byte_compile" script - it never imports setuptools itself, so it never gets setuptools'
+    #     local-vendored-distutils shim, and hard-fails on Python 3.12+ (which removed the real
+    #     stdlib distutils entirely). A real pip install never hits this at all, since pip always
+    #     builds a wheel via PEP 517 and installs from that - this opts a package into the same
+    #     path. Still needs `setuptools` on this package's PYTHONPATH (same as "setup.py").
+    #   - "poetry": same wheel-build-then-unzip idea, but via poetry.core.masonry.api.build_wheel()
+    #     - for packages whose metadata lives only in [tool.poetry] (no [project] table at all),
+    #     which the "setup.py" path can't read since setuptools' PEP 621 support has no knowledge
+    #     of poetry's pre-PEP-621 schema. Needs `poetry-core` on this package's PYTHONPATH.
+    #   - "hatchling": same idea, via hatchling.build.build_wheel() - for packages whose [project]
+    #     table the "setup.py" path technically CAN read, but where setuptools' stricter validation
+    #     (unknown keys, PEP 639 license-classifier conflicts, ...) or package auto-discovery
+    #     rejects metadata that hatchling itself tolerates fine. Needs `hatchling` on this package's
+    #     PYTHONPATH.
+    buildBackend ? "setup.py",
     nativeBuildInputs ? [ ],
     buildInputs ? [ ],
     propagatedBuildInputs ? [ ],
@@ -81,6 +96,14 @@ lib.makeOverridable (
   assert
     format == "setuptools"
     || throw "buildPythonPackage: unsupported format '${format}' for ${pname} (only \"setuptools\" is implemented so far)";
+  assert
+    builtins.elem buildBackend [
+      "setup.py"
+      "wheel"
+      "poetry"
+      "hatchling"
+    ]
+    || throw "buildPythonPackage: unsupported buildBackend '${buildBackend}' for ${pname}";
   let
     transitiveDependencies = lib.unique (
       dependencies ++ builtins.concatMap (dep: dep.passthru.pythonDependencyClosure or [ ]) dependencies
@@ -139,13 +162,33 @@ lib.makeOverridable (
       # itself imports. This requires setuptools to be a nativeBuildInput (except when building
       # setuptools itself, which is self-hosted from its own checkout on PYTHONPATH via cwd).
       buildPhase =
-        if buildViaWheel then
+        if buildBackend == "wheel" then
           ''
             runHook preBuild
             mkdir -p dist
             ${pythonExecutable} -c "
             from setuptools import build_meta
             build_meta.build_wheel('dist')
+            "
+            runHook postBuild
+          ''
+        else if buildBackend == "poetry" then
+          ''
+            runHook preBuild
+            mkdir -p dist
+            ${pythonExecutable} -c "
+            from poetry.core.masonry.api import build_wheel
+            build_wheel('dist')
+            "
+            runHook postBuild
+          ''
+        else if buildBackend == "hatchling" then
+          ''
+            runHook preBuild
+            mkdir -p dist
+            ${pythonExecutable} -c "
+            from hatchling.build import build_wheel
+            build_wheel('dist')
             "
             runHook postBuild
           ''
@@ -166,7 +209,7 @@ lib.makeOverridable (
           '';
 
       installPhase =
-        if buildViaWheel then
+        if buildBackend == "wheel" || buildBackend == "poetry" || buildBackend == "hatchling" then
           ''
             runHook preInstall
             mkdir -p $out/${sitePackages}
@@ -208,4 +251,23 @@ lib.makeOverridable (
     }
     // lib.optionalAttrs (cargoRoot != null) { inherit cargoRoot; }
   )
-)
+  );
+
+  poetryCore = import ./poetry-core.nix {
+    inherit pkgs lib python;
+    buildPythonPackage = buildPythonPackageBase;
+  };
+in
+# The public builder: identical to buildPythonPackageBase, except any package using
+# buildBackend = "poetry" implicitly gets poetry-core added to its nativeBuildInputs, so callers
+# don't have to remember to list it themselves.
+attrs:
+if (attrs.buildBackend or "setup.py") == "poetry" then
+  assert
+    poetryCore != null
+    || throw "buildPythonPackage: buildBackend \"poetry\" requires python >=3.10 (poetry-core's own requires-python floor), for ${attrs.pname}";
+  buildPythonPackageBase (
+    attrs // { nativeBuildInputs = (attrs.nativeBuildInputs or [ ]) ++ [ poetryCore ]; }
+  )
+else
+  buildPythonPackageBase attrs

@@ -55,6 +55,71 @@ rec {
     pythonImportsCheck = [ "packaging" ];
   };
 
+  # Real backend is hatchling.ouroboros (its own self-hosting bootstrap module), but its
+  # [project] table needs nothing more than the usual dynamic-version pin, so the classic bypass
+  # path (same as every other hatchling-backed package here) works without needing to actually
+  # invoke hatchling's own code to build itself.
+  hatchling = buildPythonPackage {
+    pname = "hatchling";
+    version = "1.32.4";
+    hash = "sha256-xEaPcxRMBU0qq07w8DeMQ7mHi/B/j/1reWkOlw03Xwc=";
+    postPatch = ''
+      substituteInPlace pyproject.toml --replace-fail \
+        'dynamic = ["version"]' 'version = "1.32.4"'
+    '';
+    dependencies = [
+      setuptools
+      packaging
+      pathspec
+      pluggy
+      tomli
+      tomlkit
+      trove-classifiers
+    ];
+    pythonImportsCheck = [ "hatchling" ];
+  };
+
+  pathspec = buildPythonPackage {
+    pname = "pathspec";
+    version = "1.1.1";
+    hash = "sha256-F9tezVJBBKEg4XOBTJA2epapjQfEWy4QwvORn/+Rv1o=";
+    dependencies = [ setuptools ];
+  };
+
+  pluggy = buildPythonPackage {
+    pname = "pluggy";
+    version = "1.6.0";
+    hash = "sha256-fcwTC3YljTO5D2G2WHkd7eNIbD5r+wA+5cm/s5bdIvM=";
+    dependencies = [
+      setuptools
+      setuptools-scm
+    ];
+  };
+
+  tomlkit = buildPythonPackage {
+    pname = "tomlkit";
+    version = "0.15.1";
+    hash = "sha256-4lu/OIQwBSRiEKEpgndvJ/mcub5nFg4UQ00MDSHuHpc=";
+    buildBackend = "poetry";
+  };
+
+  # Uses the `calver` setuptools plugin to compute its own version dynamically at build time,
+  # which needs packaging a whole separate package just to stamp a version string that nothing
+  # here reads at runtime (this is just PyPI classifier data) - patch it to a static version
+  # instead of packaging calver too.
+  trove-classifiers = buildPythonPackage {
+    pname = "trove_classifiers";
+    version = "2026.9.21.13";
+    hash = "sha256-Cp68jU4vPooihIxSWAMwNb7BejASrD/qFtuqdkSJ63E=";
+    postPatch = ''
+      substituteInPlace setup.py --replace-fail \
+        'use_calver="%Y.%m.%d.%H",' 'version="2026.9.21.13",'
+      substituteInPlace setup.py --replace-fail \
+        '    setup_requires=["calver"],' ""
+    '';
+    dependencies = [ setuptools ];
+  };
+
   pycparser = buildPythonPackage {
     pname = "pycparser";
     version = "2.21";
@@ -71,8 +136,8 @@ rec {
 
   setuptools = buildPythonPackage {
     pname = "setuptools";
-    version = "81.0.0";
-    hash = "sha256-SHtTkV9SUB8Kecz9DALBZf/gZjFEOohnQLka9LelhFo=";
+    version = "84.0.0";
+    hash = "sha256-9GlcISV/DZtTfsJpLJQdAu4UO3zBJ2lBNJpUZXOy73M=";
     pythonImportsCheck = [ "setuptools" ];
   };
 
@@ -96,7 +161,7 @@ rec {
     pname = "setuptools_scm";
     version = "10.3.4";
     hash = "sha256-pp8ov8JFYIeBIF6RL6rkN8KyFldzr6TnuXnXdEemndI=";
-    buildViaWheel = true;
+    buildBackend = "wheel";
     dependencies = [ vcs-versioning ];
     pythonImportsCheck = [ "setuptools_scm" ];
   };
@@ -130,6 +195,8 @@ rec {
     pythonImportsCheck = [ "setuptools_rust" ];
   };
 
+  # setuptools-scm's own closure already covers vcs-versioning/packaging/setuptools/tomli/
+  # typing-extensions.
   zipp = buildPythonPackage {
     pname = "zipp";
     version = "3.15.0";
