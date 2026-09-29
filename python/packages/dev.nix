@@ -19,5 +19,15 @@ if odooMajorVersion == 19 then
       odooPackages
       ;
   }
+else if odooMajorVersion == 20 then
+  import ./dev/20.nix {
+    inherit
+      pkgs
+      lib
+      python
+      pythonDefaultPackages
+      odooPackages
+      ;
+  }
 else
   { }
