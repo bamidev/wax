@@ -145,7 +145,8 @@ rec {
     pname = "gevent";
     version = "24.2.1";
     hash = "sha256-Qy/Hb2gKz3zxiMLuD106tztjwfAxFMfNijTOu+WqIFY=";
-    nativeBuildInputs = [
+    dependencies = [
+      greenlet
       zope-event
       zope-interface
     ];
@@ -196,16 +197,10 @@ rec {
     ];
   };
 
-  # lxml dependency. lxml.html.clean (used by odoo's mail body sanitization) was split out of
-  # lxml itself into this separate package starting at lxml 5.2 - explicitly listed (but left
-  # unpinned) in odoo's requirements.txt for python_version >= '3.12'. Its own install_requires
-  # asks for lxml>=6.1.1, newer than the 5.2.1 pinned above; our builder doesn't do real
-  # dependency resolution so this isn't a build-time issue, just a metadata mismatch worth noting
-  # (verify the actual clean.py API still works against lxml 5.2.1 during the import sweep).
   lxml-html-clean = pythonPackage {
     pname = "lxml_html_clean";
-    version = "0.4.5";
-    hash = "sha256-4qTH1b7t0XzXtITYSKBXHlS6ojmk+d9VRuOsun+ZBWA=";
+    version = "0.4.4";
+    hash = "sha256-WPOanWMnESAu0dbQubR6kE4wbIXeV2FUO5Dj4/c2rPs=";
     nativeBuildInputs = [ lxml ];
     pythonImportsCheck = [ "lxml_html_clean" ];
   };
