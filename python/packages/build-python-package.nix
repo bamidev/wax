@@ -147,6 +147,16 @@ let
       LOCALE_ARCHIVE = "${pkgs.glibcLocalesUtf8}/lib/locale/locale-archive";
       LANG = "en_US.UTF-8";
 
+      # distutils' build_py.byte_compile() unconditionally tries to precompile .pyc files (used by
+      # both the classic install path and bdist_wheel's underlying build step) by spawning a
+      # *detached* python subprocess running a bare "from distutils.util import byte_compile"
+      # script - same crash as the one --no-compile dodges below for the classic install path, but
+      # bdist_wheel doesn't offer an equivalent flag to skip it. build_py.byte_compile() itself
+      # checks sys.dont_write_bytecode first and returns early if set, avoiding the subprocess
+      # entirely - we don't need precompiled .pyc files anyway (Python just compiles on first
+      # import).
+      PYTHONDONTWRITEBYTECODE = "1";
+
       # We don't use pip or a venv to resolve dependencies, so put sibling Python packages
       # (declared as native/propagated build inputs, or via `dependencies` - see above) on
       # PYTHONPATH ourselves.

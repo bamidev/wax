@@ -36,21 +36,19 @@ rec {
 
   packaging = buildPythonPackage {
     pname = "packaging";
-    version = "24.2";
-    hash = "sha256-wiim3F6TLTRrxXOTeRCdSeiFPdgiNXHHxbVSYO3AuX8=";
+    version = "26.3";
+    hash = "sha256-lO3CVkJK84di6zEwbu0ovrnw78UKiDdJLJ1v1gBK7Xk=";
     dependencies = [ setuptools ];
-    # setuptools 81's own PEP 639 license-field handling needs packaging>=24.2 (for
-    # packaging.licenses) to build ANY package whose pyproject.toml has a plain `license = "..."`
-    # string - not just packages that declare packaging as their own dependency. That's also why
-    # this is newer than the 23.2 used for 3.6/3.7 (setuptools 59.6.0/67.8.0 there predate that
-    # validation, so it was never triggered).
+    # setuptools' own PEP 639 license-field handling needs packaging>=24.2 (for packaging.licenses)
+    # to build ANY package whose pyproject.toml has a plain `license = "..."` string - not just
+    # packages that declare packaging as their own dependency.
     #
     # Upstream builds with flit_core and reads `version` dynamically from packaging/__about__.py.
     # Our setup.py-less shim just calls `setuptools.setup()` against pyproject.toml directly,
     # which can't resolve a flit-style dynamic version, so pin it explicitly here.
     postPatch = ''
       substituteInPlace pyproject.toml --replace-fail \
-        'dynamic = ["version"]' 'version = "24.2"'
+        'dynamic = ["version"]' 'version = "26.3"'
     '';
     pythonImportsCheck = [ "packaging" ];
   };
@@ -168,8 +166,8 @@ rec {
 
   tomli = buildPythonPackage {
     pname = "tomli";
-    version = "2.0.1";
-    hash = "sha256-3lJsEpFPDFUNFZJMYtcqvEjW/nNkqocygzejEAf+ik8=";
+    version = "2.4.1";
+    hash = "sha256-fH4alhoLLyRywaxbaa/6CuETLDmty2erqYVocCucwj8=";
     dependencies = [ setuptools ];
     pythonImportsCheck = [ "tomli" ];
   };

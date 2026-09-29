@@ -17,7 +17,7 @@ let
       else if odooMajorVersion < 20 then
         "3.10.15"
       else
-        "3.11.16";
+        "3.12.14";
     majorVersion = lib.strings.toInt (lib.versions.major version);
     minorVersion = lib.strings.toInt (lib.versions.minor version);
 
@@ -56,8 +56,8 @@ let
             "sha256-eREFHtBCL9VLj1n/wDD3zyrjDg9hvaGRgAuwQNzk+dI="
           else if finalAttrs.version == "3.10.15" then
             "sha256-qrCVCBdzUXJgGHmHLZN8HkkopXxAmuAjaew9kdzOvnk="
-          else if finalAttrs.version == "3.11.16" then
-            "sha256-kbzev93iOaADrpNzin/OD5Iw/uXEvCuG9uboxvmKq+g="
+          else if finalAttrs.version == "3.12.14" then
+            "sha256-XIRir1eQuvQ6MhoVWdvg2wbRvkMA+4X7U8QAYGaOVIo="
           else
             lib.fakeHash;
       };
