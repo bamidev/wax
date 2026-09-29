@@ -3,11 +3,5 @@
   lib,
   odooMajorVersion,
 }:
-lib.concatStrings (
-  lib.lists.forEach config.dev.pythonPackages (p: ''
-    wax/venv/bin/pip install ${p}
-  '')
-)
-+ ''
-  wax/venv/bin/pip install ${if odooMajorVersion >= 15 then "-e" else ""} wax/repos/odoo
-''
+# TODO: Install the python packages from config.dev.pythonPackages. They should be derivations now.
+""
