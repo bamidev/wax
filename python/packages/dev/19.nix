@@ -51,7 +51,12 @@ rec {
     pname = "black";
     version = "26.5.1";
     hash = "sha256-3TIfZoBTlhgkvMG+HMHfdIstfk+igIawgzHld7AQCnM=";
-    buildViaWheel = true;
+    postPatch = ''
+      substituteInPlace pyproject.toml --replace-fail \
+        'dynamic = ["readme", "version"]' \
+        'version = "26.5.1"
+      readme = "README.md"'
+    '';
     nativeBuildInputs = [
       odooPackages.platformdirs
       pathspec
@@ -303,12 +308,21 @@ rec {
     pname = "pytokens";
     version = "0.4.1";
     hash = "sha256-KSBS/oCSOq4iYMBz+CLOuiHzhyztmmi7eVOzSOVhF5o=";
+    # setup.py defaults to an optional mypyc-compiled speedup on CPython, needing a full mypyc
+    # build toolchain we don't have; this env var (setup.py's own documented escape hatch) skips
+    # it in favor of the plain Python implementation.
+    preBuild = ''
+      export PYTOKENS_USE_MYPYC=0
+    '';
   };
 
   pyyaml = pythonPackage {
     pname = "PyYAML";
     version = "6.0.3";
-    hash = "sha256-12YjNzQh3yL7TPiBcCDLt+8VxyW51eRfF+GJv8OEGQ8=";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/05/8e/961c0007c59b8dd7729d542c61a4d537767a59645b82a0b521206e1e25c2/pyyaml-6.0.3.tar.gz";
+      hash = "sha256-12YjNzQh3yL7TPiBcCDLt+8VxyW51eRfF+GJv8OEGQ8=";
+    };
   };
 
   rope = pythonPackage {
