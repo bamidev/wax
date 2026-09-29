@@ -30,7 +30,12 @@ let
     # builds (ahead of anything a package's own buildInputs adds), the interpreter itself has to
     # be built against openssl_1_1, not just the individual python package.
     opensslPackage =
-      if builtins.elem (lib.versions.majorMinor version) [ "3.7" "3.10" ] then
+      if
+        builtins.elem (lib.versions.majorMinor version) [
+          "3.7"
+          "3.10"
+        ]
+      then
         pkgs.openssl_1_1
       else
         pkgs.openssl;

@@ -1,4 +1,8 @@
-{ pkgs, lib, python }:
+{
+  pkgs,
+  lib,
+  python,
+}:
 let
   buildPythonPackage = import ../build-python-package.nix { inherit pkgs lib python; };
 in

@@ -1,7 +1,11 @@
 # Nothing in odoo 11/12's own requirements needs cffi/rust bindings (no cryptography, no other
 # cffi-based deps), so unlike the 3.6/3.7 toolchains this stays minimal: just enough for packages
 # that version themselves via setuptools_scm to build.
-{ pkgs, lib, python }:
+{
+  pkgs,
+  lib,
+  python,
+}:
 let
   buildPythonPackage = import ../build-python-package.nix { inherit pkgs lib python; };
 in
