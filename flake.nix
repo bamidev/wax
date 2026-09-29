@@ -33,19 +33,25 @@
               ;
             config = completeConfig;
           };
-          # Lets a consuming flake alter or add packages without forking wax: pass
-          # `pythonPackageOverrides = prev: { foo = prev.foo.override { ... }; bar = ...; };` in
-          # config. Every package here is already `lib.makeOverridable` (see
-          # build-python-package.nix), so `prev.foo.override {...}` works directly. This is a
-          # plain `prev`-only merge, not a fixed-point overlay: overriding a package here doesn't
-          # propagate into any OTHER package that already references the original internally via
-          # its own nativeBuildInputs (each odoo/N.nix file is a plain `rec {}`, not
-          # `final: prev: {}`) - only things built directly against this final merged set see it.
+
+          # The python packages that wll be added to the virtualenv of Wax.
           pythonPackages =
             let
               basePythonPackages = pythonDefaultPackages // odooPackages;
             in
             basePythonPackages // (completeConfig.pythonPackageOverrides or (prev: { })) basePythonPackages;
+
+          # The additional packages that will be added to the virtualenv via command `setup-dev`.
+          devPythonPackages = import ./python/packages/dev.nix {
+            inherit
+              pkgs
+              lib
+              python
+              pythonDefaultPackages
+              odooPackages
+              odooMajorVersion
+              ;
+          };
 
           postgresContainerImage =
             if completeConfig.database.allow_containerization then
@@ -117,22 +123,6 @@
               allow_containerization = false;
               package = pkgs.postgresql_17;
             };
-
-            dev.pythonPackages = [
-              "debugpy"
-              "openupgradelib"
-              "pyls-memestra"
-              "pylsp-mypy"
-              "pylint-odoo"
-              "python-lsp-server[all]"
-              "python-lsp-black"
-              "python-lsp-isort"
-              "git+https://github.com/ddejong-therp/odoo-repl@master"
-              # rope only supports python 3.7 and higher
-            ]
-            ++ (lib.optionals (python.majorVersion == 3 && python.minorVersion >= 7) [
-              "pylsp-rope"
-            ]);
 
             odooConfig.options = {
               db_host = if completeConfig.database.allow_containerization then "127.0.0.1" else "";
