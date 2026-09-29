@@ -150,24 +150,24 @@
           commands = {
             build = pkgs.writers.writeBashBin "build" (
               import ./commands/build.nix {
-                commands = commands;
+                inherit commands;
               }
             );
             build-addons = pkgs.writers.writeBashBin "build-addons" (
               import ./commands/build-addons.nix {
-                config = config;
-                lib = lib;
+                inherit lib;
+                config = completeConfig;
               }
             );
             build-config = pkgs.writers.writeBashBin "build-config" (
               import ./commands/build-config.nix {
+                inherit lib;
                 config = completeConfig;
-                lib = lib;
               }
             );
             build-dev = pkgs.writers.writeBashBin "build-dev" (
               import ./commands/build-dev.nix {
-                commands = commands;
+                inherit commands;
               }
             );
             build-repos =
@@ -180,19 +180,14 @@
                 }
                 (
                   import ./commands/build-repos.nix {
+                    inherit lib pkgs;
                     config = completeConfig;
-                    lib = lib;
-                    pkgs = pkgs;
                   }
                 );
             build-venv = pkgs.writers.writeBashBin "build-venv" (
               import ./commands/build-venv.nix {
+                inherit lib odooMajorVersion pkgs python pythonPackages;
                 config = completeConfig;
-                lib = lib;
-                odooMajorVersion = odooMajorVersion;
-                pkgs = pkgs;
-                python = python;
-                pythonPackages = pythonPackages;
               }
             );
             db-container-shell = pkgs.writers.writeBashBin "db-container-shell" (
@@ -203,25 +198,22 @@
             );
             run = pkgs.writers.writeBashBin "run" (
               import ./commands/run.nix {
-                pkgs = pkgs;
-                odooMajorVersion = odooMajorVersion;
+                inherit odooMajorVersion pkgs;
               }
             );
             setup-dev = pkgs.writers.writeBashBin "setup-dev" (
               import ./commands/setup-dev.nix {
-                config = completeConfig;
-                lib = lib;
-                odooMajorVersion = odooMajorVersion;
+                inherit devPythonPackages lib python;
               }
             );
             shell = pkgs.writers.writeBashBin "shell" (
               import ./commands/shell.nix {
-                odooMajorVersion = odooMajorVersion;
+                inherit odooMajorVersion;
               }
             );
             upgrade = pkgs.writers.writeBashBin "upgrade" (
               import ./commands/upgrade.nix {
-                odooMajorVersion = odooMajorVersion;
+                inherit odooMajorVersion;
               }
             );
           };
