@@ -10,6 +10,15 @@
 }:
 let
   pythonPackage = python.pythonPackage pythonDefaultPackages;
+  common27 = import ./2.7.nix {
+    inherit
+      config
+      pkgs
+      lib
+      python
+      pythonDefaultPackages
+      ;
+  };
 in
 rec {
   babel = pythonPackage {
@@ -38,11 +47,7 @@ rec {
     hash = "sha256-nG6Y7cszSZiBuG7eB9mWjIGrfHaeKOmvJAdfClN58HA=";
   };
 
-  docutils = pythonPackage {
-    pname = "docutils";
-    version = "0.12";
-    hash = "sha256-x9txeBCraWX2bIzwOYqYydjfmC2jm0zX8WKRHriVlvo=";
-  };
+  inherit (common27) docutils;
 
   ebaysdk = pythonPackage {
     pname = "ebaysdk";
@@ -100,11 +105,7 @@ rec {
     hash = "sha256-/tmdvk0N2yejPuSRDYcIrKnvH+hU5mg4epq5qQy/kFk=";
   };
 
-  markupsafe = pythonPackage {
-    pname = "MarkupSafe";
-    version = "0.23";
-    hash = "sha256-pOwa/1m5WhS0XrLiN2GgF56YMZ2lp+t2tW6ozce4ccM=";
-  };
+  inherit (common27) markupsafe;
 
   mock = pythonPackage {
     pname = "mock";
@@ -156,12 +157,7 @@ rec {
     hash = "sha256-OPdBgvueFcr9DN8IIQmKlcwXMBgHrtJWNKGLZlN7pRs=";
   };
 
-  psycopg2 = pythonPackage {
-    pname = "psycopg2";
-    version = "2.7.7";
-    hash = "sha256-9FJtB4rt1Rh9BQiqX5oB6uakikcO1nhAbalLTNZSS34=";
-    nativeBuildInputs = [ config.database.package.dev ];
-  };
+  inherit (common27) psycopg2;
 
   pydot = pythonPackage {
     pname = "pydot";

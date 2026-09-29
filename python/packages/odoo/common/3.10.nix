@@ -11,6 +11,33 @@
 }:
 let
   pythonPackage = python.pythonPackage pythonDefaultPackages;
+  common35 = import ./3.5.nix {
+    inherit
+      config
+      pkgs
+      lib
+      python
+      pythonDefaultPackages
+      ;
+  };
+  common36 = import ./3.6.nix {
+    inherit
+      config
+      pkgs
+      lib
+      python
+      pythonDefaultPackages
+      ;
+  };
+  common37 = import ./3.7.nix {
+    inherit
+      config
+      pkgs
+      lib
+      python
+      pythonDefaultPackages
+      ;
+  };
 in
 rec {
   asn1crypto = pythonPackage {
@@ -27,11 +54,7 @@ rec {
     hash = "sha256-YmuoI0IR25joad92IwoTfExAoS1yRFxF1fW3FvB24v0=";
   };
 
-  babel = pythonPackage {
-    pname = "Babel";
-    version = "2.9.1";
-    hash = "sha256-vAwXb59qmUWCIw3zUKpuBbouvks6wxfqsp2b5dJ2jaA=";
-  };
+  inherit (common37) babel;
 
   # cbor2's own setup.py does `from pkg_resources import parse_version`, which is exactly why
   # python/default.nix pins setuptools at 81.0.0 for this python range (pkg_resources was removed
@@ -51,11 +74,7 @@ rec {
   };
 
   # requests dependency:
-  certifi = pythonPackage {
-    pname = "certifi";
-    version = "2024.8.30";
-    hash = "sha256-vslB0qqBleJIpgsx/58FWChM8BpSWRztpz6pr//Wn9k=";
-  };
+  inherit (common36) certifi;
 
   chardet = pythonPackage {
     pname = "chardet";
@@ -105,11 +124,7 @@ rec {
     pythonImportsCheck = [ "cryptography" ];
   };
 
-  decorator = pythonPackage {
-    pname = "decorator";
-    version = "4.4.2";
-    hash = "sha256-46YvBSAXJEDKDcyCN0kxk4Ljd/N/FAoLme9F/suEv+c=";
-  };
+  inherit (common37) decorator;
 
   docutils = pythonPackage {
     pname = "docutils";
@@ -290,11 +305,7 @@ rec {
     nativeBuildInputs = [ pyasn1 ];
   };
 
-  pypdf2 = pythonPackage {
-    pname = "PyPDF2";
-    version = "1.26.0";
-    hash = "sha256-4o+QLy8KFgPqleviHf8xHvCb49Dw7ymj5EqTJylWQ4U=";
-  };
+  inherit (common35) pypdf2;
 
   pyserial = pythonPackage {
     pname = "pyserial";
@@ -337,11 +348,7 @@ rec {
     hash = "sha256-N04rXhORLM2/ULCyP8osPgUxF0gFwy104UXzd1Yyg0A=";
   };
 
-  pytz = pythonPackage {
-    pname = "pytz";
-    version = "2025.2";
-    hash = "sha256-NguePbtJognCGtYYCcf7RTZD4EiziSTHZYE1RnRugcM=";
-  };
+  inherit (common37) pytz;
 
   pyusb = pythonPackage {
     pname = "pyusb";
@@ -362,11 +369,7 @@ rec {
     hash = "sha256-3HZX/LC8PkhcPIaaRN3bUtcRNWoBpFZmS3vvgnIiyYI=";
   };
 
-  requests = pythonPackage {
-    pname = "requests";
-    version = "2.25.1";
-    hash = "sha256-J5c91KkEpPE7JjoZyGbBO5KjntHJZGVfAl8/jT11uAQ=";
-  };
+  inherit (common37) requests;
 
   # zeep dependency:
   requests-file = pythonPackage {
@@ -389,23 +392,11 @@ rec {
   };
 
   # python-dateutil dependency:
-  six = pythonPackage {
-    pname = "six";
-    version = "1.16.0";
-    hash = "sha256-HmHDdHehYmRY4297HYKqXJsJT6SAKJIHLknenGDEySY=";
-  };
+  inherit (common35) six;
 
-  urllib3 = pythonPackage {
-    pname = "urllib3";
-    version = "1.26.5";
-    hash = "sha256-p6zQl3ElMl9Ra9qXNfpxQrkJqNAeiy5MgQjQmE5uAJg=";
-  };
+  inherit (common37) urllib3;
 
-  vobject = pythonPackage {
-    pname = "vobject";
-    version = "0.9.6.1";
-    hash = "sha256-llEq7HS5Crtx9rU4mN1/5HMAzJQBBMT3kUjwZx95AQE=";
-  };
+  inherit (common36) vobject;
 
   werkzeug = pythonPackage {
     pname = "Werkzeug";
@@ -425,11 +416,7 @@ rec {
     hash = "sha256-UwBfA+jrWPBh6/QdV2fHSV7gdywjlv4mt+DKIvqcJXA=";
   };
 
-  xlwt = pythonPackage {
-    pname = "xlwt";
-    version = "1.3.0";
-    hash = "sha256-xZkScXqbKPGjwqmP1gdBAUsGsEOTbc7LwRPqqtoVbIg=";
-  };
+  inherit (common35) xlwt;
 
   zeep = pythonPackage {
     pname = "zeep";
@@ -456,16 +443,8 @@ rec {
 
   # gevent dependency (gevent.monkey.patch_all imports gevent.events, which needs this
   # unconditionally).
-  zope-event = pythonPackage {
-    pname = "zope.event";
-    version = "4.6";
-    hash = "sha256-gdmIEwRvyGzEE242mP7mKKMoL5wyDbGGWMIXSSNfzoA=";
-  };
+  inherit (common37) zope-event;
 
   # gevent dependency, same as zope.event above.
-  zope-interface = pythonPackage {
-    pname = "zope.interface";
-    version = "5.5.2";
-    hash = "sha256-v+4fP/YhQ4GUmeNI9bin86oCWfmspeDdrnOR0Fnc5nE=";
-  };
+  inherit (common37) zope-interface;
 }

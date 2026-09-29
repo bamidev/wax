@@ -10,6 +10,24 @@
 }:
 let
   pythonPackage = python.pythonPackage pythonDefaultPackages;
+  common35 = import ./3.5.nix {
+    inherit
+      config
+      pkgs
+      lib
+      python
+      pythonDefaultPackages
+      ;
+  };
+  common36 = import ./3.6.nix {
+    inherit
+      config
+      pkgs
+      lib
+      python
+      pythonDefaultPackages
+      ;
+  };
 in
 rec {
   babel = pythonPackage {
@@ -19,11 +37,7 @@ rec {
   };
 
   # requests dependency:
-  certifi = pythonPackage {
-    pname = "certifi";
-    version = "2024.8.30";
-    hash = "sha256-vslB0qqBleJIpgsx/58FWChM8BpSWRztpz6pr//Wn9k=";
-  };
+  inherit (common36) certifi;
 
   decorator = pythonPackage {
     pname = "decorator";
@@ -37,11 +51,7 @@ rec {
     hash = "sha256-wt46YOnn0Hvia38rAMoDCcIH4GwQD5zCqUkx/HWkePw=";
   };
 
-  ebaysdk = pythonPackage {
-    pname = "ebaysdk";
-    version = "2.1.5";
-    hash = "sha256-eEWOHqSg/H1pPCbeNjBpaWOTdn5KqWif0477+whAms0=";
-  };
+  inherit (common35) ebaysdk;
 
   jinja2 = pythonPackage {
     pname = "Jinja2";
@@ -59,11 +69,7 @@ rec {
     ];
   };
 
-  ofxparse = pythonPackage {
-    pname = "ofxparse";
-    version = "0.19";
-    hash = "sha256-2Mgf1QiTMhBtoaLokZxBLHxnfwivBNVXynZ3AaBOCRg=";
-  };
+  inherit (common36) ofxparse;
 
   pillow = pythonPackage {
     pname = "Pillow";
@@ -75,11 +81,7 @@ rec {
     ];
   };
 
-  polib = pythonPackage {
-    pname = "polib";
-    version = "1.1.0";
-    hash = "sha256-+th9E2lhJ/+yfqCILWGC8anPil4rN6WHdRFmxR5aMyo=";
-  };
+  inherit (common36) polib;
 
   psycopg2 = pythonPackage {
     pname = "psycopg2";
@@ -88,11 +90,7 @@ rec {
     nativeBuildInputs = [ config.database.package.dev ];
   };
 
-  pypdf2 = pythonPackage {
-    pname = "PyPDF2";
-    version = "1.26.0";
-    hash = "sha256-4o+QLy8KFgPqleviHf8xHvCb49Dw7ymj5EqTJylWQ4U=";
-  };
+  inherit (common35) pypdf2;
 
   python-ldap = pythonPackage {
     pname = "python-ldap";
@@ -116,17 +114,9 @@ rec {
     hash = "sha256-NguePbtJognCGtYYCcf7RTZD4EiziSTHZYE1RnRugcM=";
   };
 
-  pyusb = pythonPackage {
-    pname = "pyusb";
-    version = "1.0.2";
-    hash = "sha256-TptyzEpCBcpk+/Hz//OaM1USFmwVGtED5VyCI6wUc2I=";
-  };
+  inherit (common36) pyusb;
 
-  qrcode = pythonPackage {
-    pname = "qrcode";
-    version = "6.1";
-    hash = "sha256-UFJThU9gfyq/TRYJLGHU6dURo7Q5LmC/+VemhZKwQ2k=";
-  };
+  inherit (common36) qrcode;
 
   reportlab = pythonPackage {
     pname = "reportlab";
@@ -141,11 +131,7 @@ rec {
   };
 
   # python-dateutil dependency:
-  six = pythonPackage {
-    pname = "six";
-    version = "1.16.0";
-    hash = "sha256-HmHDdHehYmRY4297HYKqXJsJT6SAKJIHLknenGDEySY=";
-  };
+  inherit (common35) six;
 
   urllib3 = pythonPackage {
     pname = "urllib3";
@@ -153,11 +139,7 @@ rec {
     hash = "sha256-p6zQl3ElMl9Ra9qXNfpxQrkJqNAeiy5MgQjQmE5uAJg=";
   };
 
-  vobject = pythonPackage {
-    pname = "vobject";
-    version = "0.9.6.1";
-    hash = "sha256-llEq7HS5Crtx9rU4mN1/5HMAzJQBBMT3kUjwZx95AQE=";
-  };
+  inherit (common36) vobject;
 
   werkzeug = pythonPackage {
     pname = "Werkzeug";
@@ -165,17 +147,9 @@ rec {
     hash = "sha256-s1OFbTfexZ1lETWfl/akskaEQuRUvRyYKY3c5TysHwQ=";
   };
 
-  xlsxwriter = pythonPackage {
-    pname = "XlsxWriter";
-    version = "1.1.2";
-    hash = "sha256-riJlig/Fueh1+pfCE9H/1hfYbcSb8Ivpnr2sgU23vzY=";
-  };
+  inherit (common36) xlsxwriter;
 
-  xlwt = pythonPackage {
-    pname = "xlwt";
-    version = "1.3.0";
-    hash = "sha256-xZkScXqbKPGjwqmP1gdBAUsGsEOTbc7LwRPqqtoVbIg=";
-  };
+  inherit (common35) xlwt;
 
   # gevent dependency (gevent.monkey.patch_all imports gevent.events, which needs this
   # unconditionally - only true from gevent 1.5.0 onward, which is why this isn't needed by any

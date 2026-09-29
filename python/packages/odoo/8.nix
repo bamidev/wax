@@ -80,12 +80,6 @@ common
     hash = "sha256-o81yz+9QcgS1D3T/y/z95+hWQ3iR0/bP54CGaYbQBv4=";
   };
 
-  markupsafe = pythonPackage {
-    pname = "MarkupSafe";
-    version = "0.23";
-    hash = "sha256-pOwa/1m5WhS0XrLiN2GgF56YMZ2lp+t2tW6ozce4ccM=";
-  };
-
   mock = pythonPackage {
     pname = "mock";
     version = "1.0.1";

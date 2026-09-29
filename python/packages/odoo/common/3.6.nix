@@ -10,6 +10,15 @@
 }:
 let
   pythonPackage = python.pythonPackage pythonDefaultPackages;
+  common35 = import ./3.5.nix {
+    inherit
+      config
+      pkgs
+      lib
+      python
+      pythonDefaultPackages
+      ;
+  };
 in
 rec {
   babel = pythonPackage {
@@ -25,11 +34,7 @@ rec {
     hash = "sha256-vslB0qqBleJIpgsx/58FWChM8BpSWRztpz6pr//Wn9k=";
   };
 
-  chardet = pythonPackage {
-    pname = "chardet";
-    version = "3.0.4";
-    hash = "sha256-hKuS7RxNTxaRbgWQa2t1psD7XbghzGXnDL1ko+Kl6q4=";
-  };
+  inherit (common35) chardet;
 
   decorator = pythonPackage {
     pname = "decorator";
@@ -43,11 +48,7 @@ rec {
     hash = "sha256-UeZO8uv7Kcrh+qEzs3EBQ0luyiHFMPP3FCTXdod2QnQ=";
   };
 
-  ebaysdk = pythonPackage {
-    pname = "ebaysdk";
-    version = "2.1.5";
-    hash = "sha256-eEWOHqSg/H1pPCbeNjBpaWOTdn5KqWif0477+whAms0=";
-  };
+  inherit (common35) ebaysdk;
 
   gevent = pythonPackage {
     pname = "gevent";
@@ -55,14 +56,7 @@ rec {
     hash = "sha256-R5HIrpxX1vFTNUc24cyrHiuvbI2a5ad6mskPQeKWay0=";
   };
 
-  greenlet = pythonPackage {
-    pname = "greenlet";
-    version = "0.4.10";
-    extension = "zip";
-    hash = "sha256-mpjUn2MlmxbTYnl2tp3YVoiKN2xJiwkcjp6tVtUJjKg=";
-    # Sdist is a .zip, and stdenv's unpackPhase needs unzip on PATH to handle that.
-    nativeBuildInputs = [ pkgs.unzip ];
-  };
+  inherit (common35) greenlet;
 
   # imported unconditionally by odoo/tools/mail.py at runtime, even though odoo 13's own
   # requirements don't list it (14+ does).
@@ -72,11 +66,7 @@ rec {
     hash = "sha256-LGpd4wiQCePafF3eZKFB28hVHVt/bPTtfCVo0MxSCo8=";
   };
 
-  jinja2 = pythonPackage {
-    pname = "Jinja2";
-    version = "2.10.1";
-    hash = "sha256-BlxPAuvn989VnknuWpX7gAqeRShyeuxvJEAqU3TGUBM=";
-  };
+  inherit (common35) jinja2;
 
   libsass = pythonPackage {
     pname = "libsass";
@@ -84,15 +74,7 @@ rec {
     hash = "sha256-lT6+gQ8J2BuEzK/coPthcdG1jI8BR8tlAYSkHhJOKW8=";
   };
 
-  lxml = pythonPackage {
-    pname = "lxml";
-    version = "3.7.1";
-    hash = "sha256-HH9ncYODAHh8+huz7WUS6dx45g7LMIqO1JrJVlacHMo=";
-    nativeBuildInputs = with pkgs; [
-      libxml2
-      libxslt
-    ];
-  };
+  inherit (common35) lxml;
 
   mako = pythonPackage {
     pname = "Mako";
@@ -106,11 +88,7 @@ rec {
     hash = "sha256-TpczLJzkRLDCw43SLdxhx0PrII2RbkJloqO1db3MsdM=";
   };
 
-  num2words = pythonPackage {
-    pname = "num2words";
-    version = "0.5.6";
-    hash = "sha256-rqJsLRHWNvDp2glPK/VayUyxw4D/H4bo2yLCEOWmoF8=";
-  };
+  inherit (common35) num2words;
 
   ofxparse = pythonPackage {
     pname = "ofxparse";
@@ -146,12 +124,7 @@ rec {
     hash = "sha256-rSEoH3vWxXV43VORPS1EIY6eKf0lEo0Q/3gZ7xb6Ruc=";
   };
 
-  psycopg2 = pythonPackage {
-    pname = "psycopg2";
-    version = "2.7.7";
-    hash = "sha256-9FJtB4rt1Rh9BQiqX5oB6uakikcO1nhAbalLTNZSS34=";
-    nativeBuildInputs = [ config.database.package.dev ];
-  };
+  inherit (common35) psycopg2;
 
   pydot = pythonPackage {
     pname = "pydot";
@@ -159,11 +132,7 @@ rec {
     hash = "sha256-1JydTdGRO+7CqZf4MVQ8jL1T5TWxpznpIWQv5BYjXwE=";
   };
 
-  pypdf2 = pythonPackage {
-    pname = "PyPDF2";
-    version = "1.26.0";
-    hash = "sha256-4o+QLy8KFgPqleviHf8xHvCb49Dw7ymj5EqTJylWQ4U=";
-  };
+  inherit (common35) pypdf2;
 
   pyserial = pythonPackage {
     pname = "pyserial";
@@ -218,18 +187,10 @@ rec {
   };
 
   # python-dateutil dependency:
-  six = pythonPackage {
-    pname = "six";
-    version = "1.16.0";
-    hash = "sha256-HmHDdHehYmRY4297HYKqXJsJT6SAKJIHLknenGDEySY=";
-  };
+  inherit (common35) six;
 
   # requests dependency:
-  urllib3 = pythonPackage {
-    pname = "urllib3";
-    version = "1.24.3";
-    hash = "sha256-I5Omlc0Sr+3Q3LJv5dUNDPJI5aZvddvYmj1OszOmGvQ=";
-  };
+  inherit (common35) urllib3;
 
   vobject = pythonPackage {
     pname = "vobject";
@@ -249,11 +210,7 @@ rec {
     hash = "sha256-riJlig/Fueh1+pfCE9H/1hfYbcSb8Ivpnr2sgU23vzY=";
   };
 
-  xlwt = pythonPackage {
-    pname = "xlwt";
-    version = "1.3.0";
-    hash = "sha256-xZkScXqbKPGjwqmP1gdBAUsGsEOTbc7LwRPqqtoVbIg=";
-  };
+  inherit (common35) xlwt;
 
   zeep = pythonPackage {
     pname = "zeep";
