@@ -57,12 +57,12 @@ jobs:
     - name: Test 16.0
       run: |
         sed -i 's/17.0/16.0/' config.nix
-        ./test.sh
+        NIXPKGS_ALLOW_INSECURE=1 ./test.sh --impure
 
     - name: Test 15.0
       run: |
         sed -i 's/16.0/15.0/' config.nix
-        ./test.sh
+        NIXPKGS_ALLOW_INSECURE=1 ./test.sh --impure
 
     - name: Test 14.0
       run: |
