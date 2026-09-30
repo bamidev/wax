@@ -144,6 +144,7 @@
 
             odooConfig.options = {
               db_host = if completeConfig.database.allow_containerization then "127.0.0.1" else "";
+              db_name = completeConfig.database.name;
               db_user = if completeConfig.database.allow_containerization then "odoo" else "";
               db_port = completeConfig.database.port;
             };
