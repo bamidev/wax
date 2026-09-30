@@ -151,7 +151,7 @@ lib.makeOverridable
           else
             "44.1.1";
 
-        buildPythonPackage = import ./packages/build-python-package.nix {
+        buildPythonPackage = import ./packages/build.nix {
           inherit pkgs lib;
           python = {
             inherit version package;

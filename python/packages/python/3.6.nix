@@ -4,7 +4,7 @@
   python,
 }:
 let
-  buildPythonPackage = import ../build-python-package.nix { inherit pkgs lib python; };
+  buildPythonPackage = import ../build.nix { inherit pkgs lib python; };
 in
 rec {
   setuptools = buildPythonPackage {
