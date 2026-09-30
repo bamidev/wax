@@ -24,8 +24,7 @@ in
   pkg: ''
     cp -r --no-clobber ${pkg}/${sitePackagesSubpath}/. "${venvSitePackages}/"
     chmod -R u+w "${venvSitePackages}"
-  ''
-) packages
+  '') packages
 + ''
 
   # Make the local Odoo checkout (cloned by build-repos into wax/repos/odoo) importable from the
