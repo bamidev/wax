@@ -16,9 +16,11 @@
 
           odooMajorVersion = lib.strings.toInt (lib.versions.major config.odooVersion);
 
-          python = import ./python {
-            inherit pkgs lib odooMajorVersion;
-          };
+          python = completeConfig.pythonOverride (
+            import ./python {
+              inherit pkgs lib odooMajorVersion;
+            }
+          );
           pythonDefaultPackages =
             import ./python/packages/python/${lib.versions.majorMinor python.version}.nix
               {
@@ -129,6 +131,10 @@
               pkgs.bash;
 
           defaultConfig = {
+            # Lets you override the python package (e.g. to swap the OpenSSL it's built against):
+            # `pythonOverride = python: python.override { opensslPackage = pkgs.openssl; };`
+            pythonOverride = python: python;
+
             database = {
               name = "odoo";
               port = 5432;
@@ -198,7 +204,13 @@
                 );
             build-venv = pkgs.writers.writeBashBin "build-venv" (
               import ./commands/build-venv.nix {
-                inherit lib odooMajorVersion pkgs python pythonPackages;
+                inherit
+                  lib
+                  odooMajorVersion
+                  pkgs
+                  python
+                  pythonPackages
+                  ;
                 config = completeConfig;
               }
             );

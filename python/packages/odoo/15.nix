@@ -34,7 +34,7 @@ common
     # it fails to compile against nixpkgs' default openssl. python/default.nix builds the
     # interpreter itself against openssl_1_1 for odoo 15, since distutils bakes the interpreter's
     # own build-time openssl paths into every extension it compiles; this just matches that.
-    buildInputs = [ pkgs.openssl_1_1 ];
+    buildInputs = [ python.opensslPackage ];
   };
 
   freezegun = pythonPackage {

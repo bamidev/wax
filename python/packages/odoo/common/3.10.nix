@@ -114,8 +114,9 @@ rec {
     # This version's cffi/OpenSSL backend (see CRYPTOGRAPHY_DONT_BUILD_RUST below) compiles fine
     # against OpenSSL 3.x's headers, but calls FIPS_mode(), a real OpenSSL 1.1 API function whose
     # symbol is gone from OpenSSL 3.x's compiled libcrypto - so it links but fails at import time
-    # with "undefined symbol: FIPS_mode". Build against 1.1 instead.
-    buildInputs = [ pkgs.openssl_1_1 ];
+    # with "undefined symbol: FIPS_mode". Build against whatever openssl the interpreter itself was
+    # built against instead.
+    buildInputs = [ python.opensslPackage ];
     # Building the rust extension needs network access (cargo fetching crates.io), which the nix
     # sandbox blocks. setup.py falls back to the pure cffi/OpenSSL backend when this is set.
     preBuild = ''
