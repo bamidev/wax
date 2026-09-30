@@ -210,3 +210,62 @@ Most configuration is done within your flake, within the `config` attrset.
 
 There will be more documentation about the config soon. For the moment, you will have to make do
 with the example above.
+
+## Security notes
+
+Wax is currently set up to provide a development environment with the lowest supported version of
+Python for each version of Odoo. This is done so that when you develop an Odoo module with Wax, and
+it works, the module should ideally work for all supported versions of Python.
+
+However, this does mean that an old version of the `cryptography` package is used, which itself
+depends on OpenSSL 1.1, which is considered EOL and unmaintained. This is true for Odoo 15 all the
+way up to Odoo 19.
+Nix will rightly give you an error about the fact that Wax is using an insecure OpenSSL package. To
+circumvent this, you can enter the development environment like this:
+```
+NIXPKGS_ALLOW_INSECURE=1 nix develop . --impure
+```
+
+But this may not suffice for production environments of course.
+To stop using the old insecure OpenSSL package, you can alter the version of OpenSSL by putting
+this in your `config.nix`:
+```nix
+{ pkgs, ... }: {
+
+  ...
+
+  # Override the OpenSSL package that the Python interpreter compiles with.
+  # its version.
+  pythonOverride = prev: prev.override {
+    opensslPackage = pkgs.openssl;
+  };
+
+  # The cryptography package will compile with the same openssl package, so we just need to alter
+  # its version.
+  pythonPackageOverrides = { prev, pythonPackage }: {
+    cryptography = prev.cryptography.override {
+      version = "50.0.1";
+      hash = "sha256-...";
+    };
+  };
+};
+```
+
+But then we need to pass along the right instance of `pkgs` as well of course:
+```
+{
+  description = "A Wax example";
+
+  inputs = {
+    wax.url = "github:bamidev/wax";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+  };
+
+  outputs = { self, wax, nixpkgs }: {
+    devShells.x86_64-linux.default = wax.lib.mkOdooShell {
+      system = "x86_64-linux";
+      config =import ./config.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
+    };
+  };
+}
+```
