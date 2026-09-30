@@ -229,7 +229,8 @@ NIXPKGS_ALLOW_INSECURE=1 nix develop . --impure
 But this may not suffice for production environments of course.
 To stop using the old insecure OpenSSL package, you can alter the version of OpenSSL by changing the
 version of `cryptography` in your flake.
-However, because the `cryptography` package provided by Wax is not build using 
+However, because that particular package is built using `cargo`, it needs a little more attention as
+well.
 Here is an example:
 
 `config.nix`
