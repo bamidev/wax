@@ -93,21 +93,6 @@ rec {
     hash = "sha256-Gztv9HmoxBS8P6LAhSmVaVxKAm3NbQYzst0JLKOcHPc=";
   };
 
-  # cryptography dropped its setup.py/cffi-fallback build entirely a while back (that's what let
-  # odoo 15-19 get away with CRYPTOGRAPHY_DONT_BUILD_RUST=1); 42.0.8 (odoo's own pin for python
-  # 3.12) still builds via setuptools.build_meta + setuptools-rust though (not maturin - that's a
-  # later change), with the Rust extension declared via a `[[tool.setuptools-rust.ext-modules]]`
-  # pyproject.toml table (same shape as cbor2's, which we neutralize elsewhere - here we actually
-  # want it built). setuptools-rust's own setuptools entry point registers that RustExtension
-  # automatically before our setup()-less fallback runs, so this needs nothing beyond the normal
-  # pythonPackage helper plus cargoLockFile for offline crate vendoring (see
-  # build-python-package.nix). `src` has to be fetchzip (an extracted directory), not
-  # fetchPypi/fetchurl, so "${src}/Cargo.lock" is a real path readable at eval time.
-  #
-  # Only works because python/default.nix now builds the interpreter with --enable-shared: pyo3's
-  # abi3 (stable ABI) extensions crash on import against a non-shared libpython with
-  # "PyInterpreterState_Get: the function must be called with the GIL held" - confirmed via a
-  # minimal pyo3 hello-world extension that crashed identically until that flag was added.
   cryptography =
     let
       src = pkgs.fetchzip {
