@@ -227,44 +227,59 @@ NIXPKGS_ALLOW_INSECURE=1 nix develop . --impure
 ```
 
 But this may not suffice for production environments of course.
-To stop using the old insecure OpenSSL package, you can alter the version of OpenSSL by putting
-this in your `config.nix`:
+To stop using the old insecure OpenSSL package, you can alter the version of OpenSSL by changing the
+version of `cryptography` in your flake.
+However, because the `cryptography` package provided by Wax is not build using 
+Here is an example:
+
+`config.nix`
 ```nix
 { pkgs, ... }: {
 
   ...
 
-  # Override the OpenSSL package that the Python interpreter compiles with.
-  # its version.
   pythonOverride = prev: prev.override {
-    opensslPackage = pkgs.openssl;
+    # Compile Python with OpenSSL 3.3
+    opensslPackage = pkgs.openssl_3_3;
   };
 
-  # The cryptography package will compile with the same openssl package, so we just need to alter
-  # its version.
-  pythonPackageOverrides = { prev, pythonPackage }: {
-    cryptography = prev.cryptography.override {
-      version = "50.0.1";
-      hash = "sha256-...";
+  pythonPackageOverrides = { prev, ... }: {
+    cryptography = prev.cryptography.override rec {
+      # cryptography starts using OpenSSL 3 from v35, and v36 starts supporting Python 3.10
+      version = "36.0.2";
+
+      # We need to override the `src` attribute completely, because `cargoLockFile` needs it.
+      src = pkgs.fetchFromGitHub {
+        owner = "pyca";
+        repo = "cryptography";
+        rev = version;
+        hash = "sha256-s2OZOLoIEwquWK0sEAhJoaMrbEUfkkrNGR/EOgmTVpg=";
+      };
+
+      # This version of cryptography requires to be built with cargo, and for that reason, we need
+      # to set/overwrite this attribute:
+      cargoLockFile = "${src}/src/rust/Cargo.lock";
     };
   };
 };
 ```
 
-But then we need to pass along the right instance of `pkgs` as well of course:
+But then we need to pass along the right instance of `pkgs` as well:
+
+`flake.nix`
 ```
 {
   description = "A Wax example";
 
   inputs = {
     wax.url = "github:bamidev/wax";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.follows = "wax/nixpkgs";
   };
 
   outputs = { self, wax, nixpkgs }: {
     devShells.x86_64-linux.default = wax.lib.mkOdooShell {
       system = "x86_64-linux";
-      config =import ./config.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
+      config = import ./config.nix { pkgs = nixpkgs.legacyPackages.x86_64-linux; };
     };
   };
 }
