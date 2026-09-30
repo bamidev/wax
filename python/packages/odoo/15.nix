@@ -18,7 +18,13 @@ let
   };
 in
 common
-// rec {
+// {
+  asn1crypto = pythonPackage {
+    pname = "asn1crypto";
+    version = "1.5.1";
+    hash = "sha256-8PbhGUdOWOBKKxr4F+tYW0/XK92JuZhiRxK1yZvnZBw=";
+  };
+
   chardet = pythonPackage {
     pname = "chardet";
     version = "3.0.4";
@@ -29,11 +35,6 @@ common
     pname = "cryptography";
     version = "2.6.1";
     hash = "sha256-Jsghy+toP6y5ZgReIGQwMCnVcqh+5pylob9Uv1X5PKY=";
-    # This version predates OpenSSL 3.x's API changes (e.g. EVP_PKEY_CTX_set_rsa_oaep_md became a
-    # real function instead of a macro, and several CRYPTO_MEM_CHECK_* constants were removed), so
-    # it fails to compile against nixpkgs' default openssl. python/default.nix builds the
-    # interpreter itself against openssl_1_1 for odoo 15, since distutils bakes the interpreter's
-    # own build-time openssl paths into every extension it compiles; this just matches that.
     buildInputs = [ python.opensslPackage ];
   };
 
