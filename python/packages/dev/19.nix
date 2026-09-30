@@ -3,10 +3,10 @@
 # other odoo major versions.
 {
   pkgs,
-  lib,
   python,
   pythonDefaultPackages,
   odooPackages,
+  ...
 }:
 let
   pythonPackage = python.pythonPackage pythonDefaultPackages;

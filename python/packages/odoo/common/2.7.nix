@@ -4,15 +4,14 @@
 # stays in each odoo major version's own file.
 {
   config,
-  pkgs,
-  lib,
   python,
   pythonDefaultPackages,
+  ...
 }:
 let
   pythonPackage = python.pythonPackage pythonDefaultPackages;
 in
-rec {
+{
   docutils = pythonPackage {
     pname = "docutils";
     version = "0.12";

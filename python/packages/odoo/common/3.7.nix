@@ -29,7 +29,7 @@ let
       ;
   };
 in
-rec {
+{
   babel = pythonPackage {
     pname = "Babel";
     version = "2.9.1";

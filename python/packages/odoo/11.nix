@@ -18,7 +18,7 @@ let
   };
 in
 common
-// rec {
+// {
   feedparser = pythonPackage {
     pname = "feedparser";
     version = "5.2.1";

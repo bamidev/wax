@@ -1,8 +1,8 @@
 {
-  pkgs,
   lib,
   python,
   buildPythonPackage,
+  ...
 }:
 if lib.versionOlder python.version "3.10" then
   null

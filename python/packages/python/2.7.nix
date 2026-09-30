@@ -8,7 +8,7 @@
 let
   buildPythonPackage = import ../build.nix { inherit pkgs lib python; };
 in
-rec {
+{
   setuptools = buildPythonPackage {
     pname = "setuptools";
     version = "44.1.1";

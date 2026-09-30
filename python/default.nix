@@ -92,7 +92,7 @@ lib.makeOverridable
             readline
             zlib
           ];
-          configureFlags = with pkgs; [
+          configureFlags = [
             "--with-openssl=${opensslPackage.dev}"
             "--with-pkg-config=yes"
             # Without a shared libpython, abi3 (stable-ABI) extension modules built with pyo3/maturin
