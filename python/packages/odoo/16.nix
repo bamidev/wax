@@ -18,28 +18,15 @@ let
   };
 in
 common
-// rec {
+// {
   chardet = pythonPackage {
     pname = "chardet";
     version = "4.0.0";
     hash = "sha256-DW9ToV20Eg8rCMlPEefZPSyRHuEYtrMKBOw+6DEBefo=";
   };
 
-  cryptography = pythonPackage {
-    pname = "cryptography";
-    version = "3.4.8";
-    hash = "sha256-lMxe1M6u/L5b84yPumoh/B02W7j7gm6haI4zcLLiShw=";
-    nativeBuildInputs = with pkgs; [
-      cargo
-      rustc
-    ];
-    buildInputs = [ pkgs.openssl ];
-    # Building the rust extension needs network access (cargo fetching crates.io), which the nix
-    # sandbox blocks. setup.py falls back to the pure cffi/OpenSSL backend when this is set.
-    preBuild = ''
-      export CRYPTOGRAPHY_DONT_BUILD_RUST=1
-    '';
-    cargoRoot = "src/rust";
+  cryptography = import ./cryptography-3.4.8.nix {
+    inherit pkgs python pythonDefaultPackages;
   };
 
   freezegun = pythonPackage {

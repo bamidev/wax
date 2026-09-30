@@ -96,25 +96,15 @@ rec {
     pythonImportsCheck = [ "bs4" ];
   };
 
+  cryptography = import ./cryptography-3.4.8.nix {
+    inherit pkgs python pythonDefaultPackages;
+  };
+
   # beautifulsoup4 dependency:
   soupsieve = pythonPackage {
     pname = "soupsieve";
     version = "1.9.6";
     hash = "sha256-eYW6zJjDSSOkOZZ8GmAtxPHhX5I7b88CNEGE+GzH76o=";
-  };
-
-  cryptography = pythonPackage {
-    pname = "cryptography";
-    version = "3.4.8";
-    hash = "sha256-lMxe1M6u/L5b84yPumoh/B02W7j7gm6haI4zcLLiShw=";
-    buildInputs = [ python.opensslPackage ];
-    # Building the rust extension needs network access (cargo fetching crates.io), which the nix
-    # sandbox blocks. setup.py falls back to the pure cffi/OpenSSL backend when this is set.
-    preBuild = ''
-      export CRYPTOGRAPHY_DONT_BUILD_RUST=1
-    '';
-    cargoRoot = "src/rust";
-    pythonImportsCheck = [ "cryptography" ];
   };
 
   inherit (common37) decorator;
