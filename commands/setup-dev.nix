@@ -12,7 +12,7 @@ let
 in
 ''
   #!/usr/bin/env bash
-  set -ex
+  set -e
 ''
 + lib.concatMapStringsSep "\n" (
   pkg: ''

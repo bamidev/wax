@@ -14,7 +14,7 @@ in
 with pkgs;
 ''
   #!/usr/bin/env bash
-  set -ex
+  set -e
   mkdir -p wax/{addons,log,repos}
 
   # Create the virtual environment
