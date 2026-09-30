@@ -96,7 +96,7 @@ rec {
     pythonImportsCheck = [ "bs4" ];
   };
 
-  cryptography = import ./cryptography-3.4.8.nix {
+  cryptography = import ../cryptography-3.4.8.nix {
     inherit pkgs python pythonDefaultPackages;
   };
 
