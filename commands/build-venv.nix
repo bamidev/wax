@@ -17,41 +17,12 @@ with pkgs;
   set -e
   mkdir -p wax/{addons,log,repos}
 
-  # Create the virtual environment
   PYTHON="python${lib.versions.majorMinor python.version}"
   PYTHON_FULL="${python.package}/bin/$PYTHON"
-  VENV_PYTHON="wax/venv/bin/$PYTHON"
-
-  # Provide some compiler flags to help the required python packages to be compiled.
-  # Perhaps older versions of python or pip doesn't use pkg-config.
-  export CFLAGS="$CFLAGS "\
-  "$(pkg-config --cflags libjpeg) "\
-  "$(pkg-config --cflags libxml-2.0) "\
-  "$(pkg-config --cflags libxslt) "\
-  "$(pkg-config --cflags libxcrypt) "\
-  "$(pkg-config --cflags zlib)"
-    export LDFLAGS="$LDFLAGS "\
-  "$(pkg-config --libs-only-L libjpeg) "\
-  "$(pkg-config --libs-only-L lber) "\
-  "$(pkg-config --libs-only-L ldap) "\
-  "$(pkg-config --libs-only-L libxml-2.0) "\
-  "$(pkg-config --libs-only-L libxslt) "\
-  "$(pkg-config --libs-only-L libxcrypt) "\
-  "$(pkg-config --libs-only-L zlib)"
-  if [ ${toString odooMajorVersion} -lt 13 ]; then
-    export CFLAGS="$CFLAGS "\
-  "-I${cyrus_sasl.dev}/include/sasl"
-    export LDFLAGS="$LDFLAGS "\
-  "-L${cyrus_sasl}/lib"
-  fi
-  if [ ${toString odooMajorVersion} -lt 19 ]; then
-    export LDFLAGS="$LDFLAGS "\
-  "-L$(pwd)/wax/venv/lib"
-  fi
 
   if [ ! -e wax/venv ]; then
-    mkdir -p wax/tmp
     if [ ${lib.versions.major python.version} == 2 ]; then
+      mkdir -p wax/tmp
       wget https://bootstrap-pypa-io.ingress.us-east-2.psfhosted.computer/virtualenv/${lib.versions.majorMinor python.version}/virtualenv.pyz -O wax/tmp/virtualenv.pyz
       $PYTHON_FULL wax/tmp/virtualenv.pyz wax/venv
     else
