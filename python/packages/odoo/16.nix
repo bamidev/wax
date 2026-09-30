@@ -39,6 +39,7 @@ common
     preBuild = ''
       export CRYPTOGRAPHY_DONT_BUILD_RUST=1
     '';
+    cargoRoot = "src/rust";
   };
 
   freezegun = pythonPackage {

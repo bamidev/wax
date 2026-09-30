@@ -107,16 +107,13 @@ rec {
     pname = "cryptography";
     version = "3.4.8";
     hash = "sha256-lMxe1M6u/L5b84yPumoh/B02W7j7gm6haI4zcLLiShw=";
-    nativeBuildInputs = with pkgs; [
-      cargo
-      rustc
-    ];
     buildInputs = [ python.opensslPackage ];
     # Building the rust extension needs network access (cargo fetching crates.io), which the nix
     # sandbox blocks. setup.py falls back to the pure cffi/OpenSSL backend when this is set.
     preBuild = ''
       export CRYPTOGRAPHY_DONT_BUILD_RUST=1
     '';
+    cargoRoot = "src/rust";
     pythonImportsCheck = [ "cryptography" ];
   };
 
