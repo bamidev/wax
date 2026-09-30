@@ -148,6 +148,7 @@
               db_user = if completeConfig.database.allow_containerization then "odoo" else "";
               db_port = completeConfig.database.port;
               dbfilter = "^${completeConfig.database.name}$";
+              without_demo = "False";
             };
 
             repos = {
