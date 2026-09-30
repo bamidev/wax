@@ -22,7 +22,7 @@ common
   asn1crypto = pythonPackage {
     pname = "asn1crypto";
     version = "1.5.1";
-    hash = "sha256-8PbhGUdOWOBKKxr4F+tYW0/XK92JuZhiRxK1yZvnZBw=";
+    hash = "sha256-E644UCvmMhFav4oky+X02lLjtSMZkK/zESPIBTBsy5w=";
   };
 
   chardet = pythonPackage {
