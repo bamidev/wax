@@ -7,15 +7,7 @@
   pythonPackages ? null,
 }:
 let
-  defaultRequirements = import ../default-requirements.nix {
-    odooMajorVersion = odooMajorVersion;
-    pythonVersion = python.version;
-  };
   pythonMajorMinor = lib.versions.majorMinor python.version;
-  buildRequirements = builtins.readFile (
-    ../build-requirements + "/${pythonMajorMinor}/requirements.txt"
-  );
-  buildRequirementsLines = lib.strings.splitString "\n" buildRequirements;
   sitePackagesSubpath = "lib/python${pythonMajorMinor}/site-packages";
   venvSitePackages = "wax/venv/${sitePackagesSubpath}";
 in
@@ -24,15 +16,6 @@ with pkgs;
   #!/usr/bin/env bash
   set -ex
   mkdir -p wax/{addons,log,repos}
-
-  # Create some necessary files
-  cat > wax/default-requirements.txt <<HEREDOC
-  ${defaultRequirements}
-  HEREDOC
-  cat > wax/requirements.txt <<HEREDOC
-  ${if config ? pythonRequirements then lib.concatStringsSep "\n" config.pythonRequirements else ""}
-  HEREDOC
-
 
   # Create the virtual environment
   PYTHON="python${lib.versions.majorMinor python.version}"
