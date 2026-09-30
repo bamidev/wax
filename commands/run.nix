@@ -2,13 +2,20 @@
 ''
   set -euo pipefail
 
-  CMD_PREFIX="${pkgs.expect}/bin/unbuffer wax/venv/bin/python wax/repos/odoo"
+  CMD_PREFIX="wax/venv/bin/python wax/repos/odoo"
   CMD_POSTFIX="-c wax/odoo.cfg"
   if [ ${toString odooMajorVersion} -lt 8 ]; then
-    $CMD_PREFIX/openerp-server $CMD_POSTFIX ''$@ 2>&1 | tee -a wax/log/odoo.log
+    BIN="$CMD_PREFIX/openerp-server"
   elif [ ${toString odooMajorVersion} -lt 10 ]; then
-    $CMD_PREFIX/odoo.py $CMD_POSTFIX ''$@ 2>&1 | tee -a wax/log/odoo.log
+    BIN="$CMD_PREFIX/odoo.py"
   else
-    $CMD_PREFIX/odoo-bin $CMD_POSTFIX  ''$@ 2>&1 | tee -a wax/log/odoo.log
+    BIN="$CMD_PREFIX/odoo-bin"
   fi
+
+  ARGS=""
+  if [ "$#" -gt 0 ]; then
+    printf -v ARGS '%q ' "''$@"
+  fi
+
+  ${pkgs.util-linux}/bin/script -qefc "$BIN $CMD_POSTFIX $ARGS" /dev/null 2>&1 | tee -a wax/log/odoo.log
 ''
