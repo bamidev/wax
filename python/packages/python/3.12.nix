@@ -68,7 +68,12 @@ rec {
     dependencies = [ setuptools ];
   };
 
-  inherit (common310) setuptools;
+  setuptools = buildPythonPackage {
+    pname = "setuptools";
+    version = "84.0.0";
+    hash = "sha256-9GlcISV/DZtTfsJpLJQdAu4UO3zBJ2lBNJpUZXOy73M=";
+    pythonImportsCheck = [ "setuptools" ];
+  };
 
   # setuptools_scm's own dynamic versioning is self-referential (it versions itself via
   # [tool.setuptools_scm] in its own pyproject.toml), which is exactly why 9.x+ split the real

@@ -134,8 +134,10 @@ rec {
 
   setuptools = buildPythonPackage {
     pname = "setuptools";
-    version = "84.0.0";
-    hash = "sha256-9GlcISV/DZtTfsJpLJQdAu4UO3zBJ2lBNJpUZXOy73M=";
+    version = "81.0.0";
+    # This version of setuptools is needed because the versions of gevent that Odoo 17, 18 & 19 uses
+    # (21.8.0), still requires PEP 621, which was last supported by setuptools 81.0.0 .
+    hash = "sha256-SHtTkV9SUB8Kecz9DALBZf/gZjFEOohnQLka9LelhFo=";
     pythonImportsCheck = [ "setuptools" ];
   };
 

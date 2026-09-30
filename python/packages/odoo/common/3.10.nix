@@ -111,11 +111,6 @@ rec {
       cargo
       rustc
     ];
-    # This version's cffi/OpenSSL backend (see CRYPTOGRAPHY_DONT_BUILD_RUST below) compiles fine
-    # against OpenSSL 3.x's headers, but calls FIPS_mode(), a real OpenSSL 1.1 API function whose
-    # symbol is gone from OpenSSL 3.x's compiled libcrypto - so it links but fails at import time
-    # with "undefined symbol: FIPS_mode". Build against whatever openssl the interpreter itself was
-    # built against instead.
     buildInputs = [ python.opensslPackage ];
     # Building the rust extension needs network access (cargo fetching crates.io), which the nix
     # sandbox blocks. setup.py falls back to the pure cffi/OpenSSL backend when this is set.
@@ -147,9 +142,9 @@ rec {
 
   gevent = pythonPackage {
     pname = "gevent";
-    version = "21.12.0";
-    hash = "sha256-9ItkV4w2e5H6eTv46qr0mVy5PIvEWGDkc7+GgHCtCU4=";
-    nativeBuildInputs = [
+    version = "21.8.0";
+    hash = "sha256-Q+k+Gkc4ySKiQWuvM/CvsKILItPbqIZyC8A3zQKphXU=";
+    dependencies = [
       zope-event
       zope-interface
     ];
