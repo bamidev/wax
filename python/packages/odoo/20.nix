@@ -108,7 +108,7 @@ rec {
       cargoRoot = "src/rust";
       # For the openssl-sys crate to find our openssl.
       nativeBuildInputs = [ pkgs.pkg-config ];
-      buildInputs = [ pkgs.openssl ];
+      buildInputs = [ python.opensslPackage ];
       pythonImportsCheck = [ "cryptography" ];
     };
 
