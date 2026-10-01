@@ -21,6 +21,10 @@ in
 
   if [ -d "${pkg}/bin" ]; then
     cp -r "${pkg}/bin/"* wax/venv/bin
+    chmod -R u+w wax/venv/bin
+    # The scripts use a shebang line that refences the python interpreted that is placed in the Nix
+    # store, which isn't aware that it is being run from the virtualenv per se.
+    find wax/venv/bin -maxdepth 1 -type f -exec sed -i "1s|^#!.*|#!$(pwd)/wax/venv/bin/python|" {} \;
   fi
 '') packages
 + ''
