@@ -32,6 +32,8 @@ jobs:
         git config --global user.name "Wax CI Job"
         git config --global user.email "wax@wax.xxx"
 
+    - name: Format check
+      run: nix run nixpkgs#nixfmt-tree -- --fail-on-change
 
     - name: Test 20.0
       run: |
