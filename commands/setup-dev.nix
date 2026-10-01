@@ -18,6 +18,10 @@ in
   echo Copying package ${pkg.pname} v${pkg.version}...
   cp -r --no-clobber ${pkg}/${sitePackagesSubpath}/. "${venvSitePackages}/"
   chmod -R u+w "${venvSitePackages}"
+
+  if [ -d "${pkg}/bin" ]; then
+    cp -r "${pkg}/bin/"* wax/venv/bin
+  fi
 '') packages
 + ''
 
