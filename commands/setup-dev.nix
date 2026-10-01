@@ -15,6 +15,7 @@ in
   set -e
 ''
 + lib.concatMapStringsSep "\n" (pkg: ''
+  echo Copying package ${pkg.pname} v${pkg.version}...
   cp -r --no-clobber ${pkg}/${sitePackagesSubpath}/. "${venvSitePackages}/"
   chmod -R u+w "${venvSitePackages}"
 '') packages
