@@ -11,29 +11,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout CI sample
-      uses: actions/checkout@v6
-      with:
-        ref: 'ci-sample'
-    - name: Install PostgresQL
-      run: |
-        sudo apt install postgresql
-        sudo service postgresql start
-        sudo -u postgres createuser --superuser runner
-        createdb odoo
     - name: Install Nix
       uses: cachix/install-nix-action@v27
       with:
         nix_path: nixpkgs=channel:nixos-26.05
         extra_nix_config: |
           experimental-features = nix-command flakes
+    - name: Format check for Wax
+      run: nix run nixpkgs#nixfmt-tree -- --fail-on-change
+    - name: Checkout CI sample
+      uses: actions/checkout@v6
+      with:
+        ref: 'ci-sample'
+    - name: Format check for the CI sample
+      run: nix run nixpkgs#nixfmt-tree -- --fail-on-change
+    - name: Install PostgresQL
+      run: |
+        sudo apt install postgresql
+        sudo service postgresql start
+        sudo -u postgres createuser --superuser runner
+        createdb odoo
     - name: Set up git
       run: |
         git config --global user.name "Wax CI Job"
         git config --global user.email "wax@wax.xxx"
 
-    - name: Format check
-      run: nix run nixpkgs#nixfmt-tree -- --fail-on-change
 
     - name: Test 20.0
       run: |
