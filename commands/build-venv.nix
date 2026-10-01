@@ -31,9 +31,6 @@ with pkgs;
 
     # Fake the libldap_r binary to be available
     # Older versions of python-ldap require it instead of the standard version, but nix doesn't have that binary
-    if [ ${toString odooMajorVersion} -lt 19 ]; then
-      ln -f -s ${openldap}/lib/libldap.so wax/venv/lib/libldap_r.so
-    fi
 
     . wax/venv/bin/activate
   fi
