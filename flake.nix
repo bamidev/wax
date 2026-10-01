@@ -280,47 +280,14 @@
               upgrade
             ]
             ++ (with pkgs; [
-              basedpyright
-              cyrus_sasl
-              stdenv.cc.cc.lib
-              git-aggregator
-              libffi
-              libjpeg
-              libxcrypt-legacy
-              libxml2
-              libxslt
-              openldap
-              pkg-config
               python.package
-              cargo
-              rustc
-              wget
               wkhtmltopdf
-              yq
-              zlib
             ])
             ++ [
               completeConfig.database.package.dev
             ];
 
           shellHook = with pkgs; ''
-            alias python="${python.package}/bin/python${lib.versions.majorMinor python.version}"
-            export PYTHONPATH="${python.package}/lib/site-packages"
-            # Python 3.6 may fail if this environment variable is set to something
-            unset _PYTHON_SYSCONFIGDATA_NAME
-            export LD_LIBRARY_PATH="${
-              lib.makeLibraryPath (
-                [
-                  stdenv.cc.cc.lib
-                  libxcrypt-legacy
-                ]
-                # python-magic (odoo 19+) dlopen()s libmagic by bare name at import time; nix has
-                # no traditional /usr/lib for it to find via ldconfig, so it needs to be on
-                # LD_LIBRARY_PATH instead.
-                ++ lib.optionals (odooMajorVersion >= 19) [ file ]
-              )
-            }"
-
             # Always activate the virtualenv once it exists upon entering the shell
             if [ -f wax/venv/bin/activate ]; then
               . wax/venv/bin/activate
