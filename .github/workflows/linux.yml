@@ -17,6 +17,8 @@ jobs:
         nix_path: nixpkgs=channel:nixos-26.05
         extra_nix_config: |
           experimental-features = nix-command flakes
+    - name: Checkout Wax
+      uses: actions/checkout@v6
     - name: Format check for Wax
       run: nix run nixpkgs#nixfmt-tree -- --fail-on-change
     - name: Checkout CI sample
