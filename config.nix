@@ -24,8 +24,8 @@
       ];
     };
 
-    server-tools = {};
-    web = {};
+    server-tools = { };
+    web = { };
   };
 
   repos.depth.deepen.base = 500;

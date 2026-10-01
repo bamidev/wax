@@ -6,12 +6,16 @@
     wax.url = "github:bamidev/wax/dev";
   };
 
-  outputs = { self, flake-utils, wax }:
-    flake-utils.lib.eachDefaultSystem (system:
-      {
-        devShells.default = wax.lib.mkOdooShell {
-          system = system;
-          config = import ./config.nix;
-        };
+  outputs =
+    {
+      self,
+      flake-utils,
+      wax,
+    }:
+    flake-utils.lib.eachDefaultSystem (system: {
+      devShells.default = wax.lib.mkOdooShell {
+        system = system;
+        config = import ./config.nix;
+      };
     });
 }
