@@ -136,20 +136,37 @@
             pythonOverride = python: python;
 
             database = {
-              name = "odoo";
-              port = 5432;
               allow_containerization = false;
+              name = null;
+              host = null;
+              port = null;
               package = pkgs.postgresql_17;
+              user = null;
             };
 
             odooConfig.options = {
-              db_host = if completeConfig.database.allow_containerization then "127.0.0.1" else "";
-              db_name = completeConfig.database.name;
-              db_user = if completeConfig.database.allow_containerization then "odoo" else "";
+              without_demo = "False"; # Install demo data by default
+            }
+            //
+              lib.optionalAttrs
+                (completeConfig.database.allow_containerization || completeConfig.database.host != null)
+                {
+                  db_host = if completeConfig.database.allow_containerization then "127.0.0.1" else "";
+                }
+            // lib.optionalAttrs (completeConfig.database.port != null) {
               db_port = completeConfig.database.port;
+            }
+            // lib.optionalAttrs (completeConfig.database.name != null) {
+              db_name = completeConfig.database.name;
               dbfilter = "^${completeConfig.database.name}$";
-              without_demo = "False";
-            };
+            }
+            //
+              lib.optionalAttrs
+                (completeConfig.database.allow_containerization || completeConfig.database.user != null)
+                {
+                  db_user =
+                    if completeConfig.database.allow_containerization then "odoo" else completeConfig.database.user;
+                };
 
             repos = {
               depth = {
