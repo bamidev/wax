@@ -76,6 +76,8 @@
                 contents = with pkgs; [
                   bash
                   coreutils
+                ] ++ [
+                  completeConfig.database.package
                 ];
 
                 runAsRoot = with pkgs; ''
