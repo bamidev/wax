@@ -67,18 +67,22 @@
               pythonPackage = python.pythonPackage pythonDefaultPackages;
             };
 
-          containerDatabaseName = if completeConfig.database.name != null then completeConfig.database.name else "odoo";
+          containerDatabaseName =
+            if completeConfig.database.name != null then completeConfig.database.name else "odoo";
           postgresContainerImage =
             if completeConfig.database.allow_containerization then
               pkgs.dockerTools.buildImage {
                 name = "wax-postgres-image";
 
-                contents = with pkgs; [
-                  bash
-                  coreutils
-                ] ++ [
-                  completeConfig.database.package
-                ];
+                contents =
+                  with pkgs;
+                  [
+                    bash
+                    coreutils
+                  ]
+                  ++ [
+                    completeConfig.database.package
+                  ];
 
                 runAsRoot = with pkgs; ''
                   ${dockerTools.shadowSetup}

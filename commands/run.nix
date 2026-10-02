@@ -1,4 +1,9 @@
-{ config, pkgs, odooMajorVersion, ... }:
+{
+  config,
+  pkgs,
+  odooMajorVersion,
+  ...
+}:
 ''
   set -eo pipefail
 
