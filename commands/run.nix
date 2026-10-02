@@ -1,6 +1,6 @@
-{ pkgs, odooMajorVersion, ... }:
+{ config, pkgs, odooMajorVersion, ... }:
 ''
-  set -euo pipefail
+  set -eo pipefail
 
   CMD_PREFIX="wax/venv/bin/python wax/repos/odoo"
   CMD_POSTFIX="-c wax/odoo.cfg"
@@ -10,6 +10,10 @@
     BIN="$CMD_PREFIX/odoo.py"
   else
     BIN="$CMD_PREFIX/odoo-bin"
+  fi
+
+  if [ "$WAX_CONTAINERIZED_DB" == "1" ] && [ ${toString config.database.allow_containerization} == 1 ]; then
+    CMD_POSTFIX+=" --db_host=127.0.0.1 --db_port=${toString config.database.container_port} --db_user=odoo"
   fi
 
   ARGS=""

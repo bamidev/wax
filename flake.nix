@@ -67,6 +67,7 @@
               pythonPackage = python.pythonPackage pythonDefaultPackages;
             };
 
+          containerDatabaseName = if completeConfig.database.name != null then completeConfig.database.name else "odoo";
           postgresContainerImage =
             if completeConfig.database.allow_containerization then
               pkgs.dockerTools.buildImage {
@@ -107,7 +108,7 @@
 
                       if [ ! -e /var/lib/postgresql/postgresql.conf ]; then
                         initdb --auth=trust -D "$PGDATA"
-                        echo host all all 172.0.0.0/8 trust >> /var/lib/postgresql/pg_hba.conf
+                        echo host all all 0.0.0.0/0 trust >> /var/lib/postgresql/pg_hba.conf
                       fi
                       postgres -D "$PGDATA" -c listen_addresses="*" &
                       PID=$!
@@ -118,8 +119,8 @@
 
                       psql <<HEREDOC
                         CREATE ROLE odoo WITH LOGIN;
-                        CREATE DATABASE odoo OWNER odoo ENCODING 'utf8' TEMPLATE template0;
-                        GRANT ALL PRIVILEGES ON DATABASE odoo TO odoo;
+                        CREATE DATABASE ${containerDatabaseName} OWNER odoo ENCODING 'utf8' TEMPLATE template0;
+                        GRANT ALL PRIVILEGES ON DATABASE ${containerDatabaseName} TO odoo;
                       HEREDOC
 
                       wait $PID
@@ -137,6 +138,7 @@
 
             database = {
               allow_containerization = false;
+              container_port = 55432;
               name = null;
               host = null;
               port = null;
@@ -243,6 +245,7 @@
             run = pkgs.writers.writeBashBin "run" (
               import ./commands/run.nix {
                 inherit odooMajorVersion pkgs;
+                config = completeConfig;
               }
             );
             setup-dev = pkgs.writers.writeBashBin "setup-dev" (
@@ -299,11 +302,13 @@
               IMAGE_HASH=$(basename "${postgresContainerImage}")
               export CONTAINER_ID=$(docker container ls -a -q -f "name=^wax-''${IMAGE_HASH}$")
               if [ -z "$CONTAINER_ID" ]; then
-                export CONTAINER_ID=$(docker container create -p ${toString completeConfig.database.port}:5432 --name "wax-$IMAGE_HASH" "$IMAGE_NAME")
+                echo Creating database container...
+                export CONTAINER_ID=$(docker container create -p ${toString completeConfig.database.container_port}:5432 --name "wax-$IMAGE_HASH" "$IMAGE_NAME")
               fi
 
               CONTAINER_ID_RUNNING=$(docker container ls -q -f "name=^wax-''${IMAGE_HASH}$")
               if [ "$CONTAINER_ID_RUNNING" != "$CONTAINER_ID" ]; then
+                echo Starting database container...
                 docker start -a "$CONTAINER_ID" >> wax/log/postgres.log 2>&1 &
                 trap "docker container stop '$CONTAINER_ID' && echo Stopped Postgres container." EXIT
               fi
