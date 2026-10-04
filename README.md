@@ -82,6 +82,7 @@ Here is an example Nix flake for you Odoo project:
   pythonPackageOverrides = { prev, pythonPackage }: {
     # Append a package
     paypal = pythonPackage {
+      pname = "paypal"; # `pname` is a required field
       version = "1.2.5";
       hash = "sha256-...";
     };

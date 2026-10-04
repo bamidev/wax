@@ -28,7 +28,7 @@ let
           extension
           ;
       },
-      hash ? null,
+      hash ? lib.fakeHash,
       # PyPI sdist file extension. Most old sdists are .tar.gz, some are .zip.
       extension ? "tar.gz",
       format ? "setuptools",
