@@ -74,7 +74,7 @@
                 config = completeConfig;
               }
             else
-              null;
+              pkgs.bash;
 
           defaultConfig = {
             # Lets you override the python package (e.g. to swap the OpenSSL it's built against):
