@@ -84,7 +84,7 @@
             database = {
               allow_containerization = false;
               container_port = 55432;
-              name = null;
+              name = "odoo";
               host = null;
               port = null;
               package = pkgs.postgresql_17;
