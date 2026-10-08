@@ -51,6 +51,8 @@ pkgs.dockerTools.buildImage {
         postgres -D "$PGDATA" -c listen_addresses="*" &
         PID=$!
 
+        trap 'kill -TERM $PID; wait $PID' TERM
+
         until pg_isready -h localhost -p 5432; do
           sleep 1
         done
